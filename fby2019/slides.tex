@@ -1,0 +1,590 @@
+\documentclass[handout]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage[T2A]{fontenc}
+\usepackage[english]{babel}
+\usepackage{graphicx}
+\usepackage{array}
+\usetheme{Warsaw}
+\usecolortheme{wolverine}
+
+\title{Semilazy data structures in Haskell}
+\author[Andrew Lelechenko]{Andrew Lelechenko \\ \texttt{1@dxdy.ru}}
+\institute[Barclays]{Barclays, London}
+\date{f(by) 2019, Minsk, 26.01.2019}
+
+\begin{document}
+
+\begin{frame}
+	\titlepage
+\end{frame}
+
+\begin{frame}{Be lazy!}
+
+Haskell is a lazy language.
+By default the expression (or any of its subexpressions)
+is not evaluated until its value
+is utterly and unavoidably needed.
+
+\bigskip
+
+{\tt
+\par integers :: [Int]
+\par integers = [0..]
+}
+
+\medskip
+
+{\tt
+\par f :: Int -> Int
+\par f 42 = 3
+\par f x  = <infinite\_loop>
+}
+
+\medskip
+
+{\tt
+\par > (map f integers) !! 42
+\par 3
+}
+
+\bigskip
+
+\pause
+
+Laziness is an abstraction to handle potentially infinite processes
+as actually infinite objects in a pure functional way.
+
+\end{frame}
+
+\begin{frame}{Introduction to schedules}
+
+A schedule is recursively defined as one of
+\begin{itemize}
+\item the full calendar,
+\pause
+\item a literal list of dates,
+\pause
+\item all specific weekdays (Mondays, Tuesdays, etc.),
+\pause
+\item union $\cup$ of two schedules,
+\pause
+\item intersection $\cap$ of two schedules,
+\pause
+\item all sorts of random stuff,
+like each day of a given schedule,
+which is the fifth Tuesday of the month
+and is directly preceded by a fourth Monday.
+\end{itemize}
+
+\bigskip
+
+\pause
+It all boils down to the algebra of sets.
+
+\end{frame}
+
+\begin{frame}{A simple schedule}
+
+A trader buys Microsoft stock on New York Stock Exchange
+and Dubai Financial Market
+and sell it on Moscow Exchange. What is the trading schedule?
+
+\pause
+\begin{itemize}
+\item
+$NYSE$:
+  \begin{itemize}
+  \item
+  Take the full calendar.
+  \item
+  Remove all Saturdays and Sundays.
+  \item
+  Remove a list of public holidays in USA.
+  \end{itemize}
+\pause
+\item
+$DFM$:
+  \begin{itemize}
+  \item
+  Take the full calendar.
+  \item
+  Remove all Fridays and Saturdays.
+  \item
+  Remove a list of public holidays in OAE.
+  \end{itemize}
+\pause
+\item
+$MOEX$:
+  \begin{itemize}
+  \item
+  Take the full calendar.
+  \item
+  Remove all Saturdays and Sundays.
+  \item
+  Remove a list of public holidays in Russia.
+  \item
+  Add a list of working holidays in Russia.
+  \end{itemize}
+\pause
+\item
+Return $(NYSE \cup DFM) \cap MOEX$.
+\end{itemize}
+
+
+\end{frame}
+
+\begin{frame}{List vs. Set vs. Vector}
+
+How can we represent a set of unique values?
+
+\begin{itemize}
+\pause
+\item A lazy single-linked list {\tt [a]}: \par
+      $O(1)$ insert, $O(n)$ lookup, huge memory overhead.
+
+\pause
+\item A fixed-sized array {\tt Vector} {\tt a}: \par
+      $O(n)$ insert, $O(\log n)$ lookup, low memory overhead.
+
+\pause
+\item A binary search tree {\tt Set} {\tt a}: \par
+      $O(\log n)$ insert, $O(\log n)$ lookup, medium memory overhead.
+\end{itemize}
+
+\pause
+Usually binary search trees are the way to go.
+
+\bigskip
+
+\pause
+{\bf Unless the set is infinite.}
+
+\end{frame}
+
+\begin{frame}{How to generate first 100  dates of a schedule?}
+
+How many dates of $x$ and $y$ need to be precomputed
+before we are able to return first 100 dates of $x \cap y$?
+
+\bigskip
+
+\pause
+We can use try-and-guess: take first 100 dates of both
+schedules: $x_{100}$ and $y_{100}$.
+If $x_{100} \cap y_{100}$ contains at least 100 dates
+we are done. Otherwise take first 200 dates of $x$ and $y$
+and try again, etc.
+This is ugly and inefficient.
+
+\bigskip
+
+\pause
+Another idea is to proclaim a Doomsday
+on 29th of February 2900 and compute everything up to this date,
+in a vain hope that our system will get decomissioned earlier.
+This is vastly inefficient.
+
+\bigskip
+
+\pause
+We'd rather work with infinite sets
+in a lazy fashion. Unfortunately, we cannot work so with
+trees or with arrays.
+
+\pause
+\begin{quote}
+\ldots when you have eliminated the impossible, whatever remains, however improbable, must be the truth.
+
+\flushright --- One lazy detective
+\end{quote}
+
+\end{frame}
+
+\begin{frame}{Schedule as a lazy distinct sorted list --- 1}
+
+How to merge (possibly infinite) ordered lists lazily?
+We cannot use operations from {\tt Data.List}.
+
+\bigskip
+
+\pause
+{\tt
+\par merge [1,3,6] [2,4,5,7] = [1,2,3,4,5,6,7]
+\par merge [1,3..] [2,4..] = [1..]
+}
+
+\bigskip
+
+\pause
+Find inspiration in the merge sort!
+
+\bigskip
+
+\pause
+{\tt
+\par merge :: Ord a => [a] -> [a] -> [a]
+\par merge [] ys = ys
+\par merge xs [] = xs
+\par merge (x:xs) (y:ys) = case x `compare` y of
+\par ~~  LT -> x : merge xs (y:ys)
+\par ~~  \_~  -> y : merge (x:xs) ys
+}
+
+\bigskip
+
+\pause
+Similar definitions may be given for set intersection, difference, etc.
+
+\end{frame}
+
+\begin{frame}{Schedule as a lazy distinct sorted list --- 2}
+
+There are several
+packages, defining operations on sorted lists:
+
+\begin{table}[h]
+\begin{tabular}{ll}
+Package & Fatal flaws \\
+\hline
+{\tt sorted} & NIH, abandoned \\
+{\tt sorted-list} & NIH, allows repetitions \\
+{\tt data-ordlist} & NIH, provides no type safety \\
+\end{tabular}
+\end{table}
+
+\pause
+{\em Here I intended to insert the XKCD comix about 15 competing standards,
+but forgot how to embed pictures in \LaTeX.}
+
+\bigskip
+
+\pause
+{\bf Solution:} write a new package {\tt containers-lazy}.
+It mimics full {\tt Data.Set} interface,
+provides a newtype with safe constructors and
+operates over sets without repetitions only.
+
+\bigskip
+
+\pause
+Available from {\tt https://github.com/Bodigrim/containers-lazy}
+
+\end{frame}
+
+\begin{frame}{Semilazy sets --- 1}
+
+The chosen representation of schedules fits well to listing of first $n$ dates.
+Complexity of $\cap$ and $\cup$ is $O(n)$,
+same to binary trees.
+
+\medskip
+
+\pause
+But lookups suffer
+from poor performance: $O(n)$ instead of $O(\log n)$.
+Can we make sets great again?
+
+\pause
+
+\medskip
+
+{\tt
+\par data Semilazy a = SL
+\par ~~\{ strictInit :: Set a
+\par ~~, ~~lazyTail :: [a]
+\par ~~\}
+}
+
+\medskip
+
+E. g., {\tt SL (Set.fromList [1,3,5,9]) [10,20..]}.
+
+\medskip
+
+\pause
+{\tt Semilazy} maintains the invariant:
+the last element of {\tt strictInit} is less than the first
+element of {\tt lazyTail}.
+\end{frame}
+
+\begin{frame}{Semilazy sets --- 2}
+
+Is it a valid definition of {\tt merge}?
+
+\bigskip
+
+{\tt
+\par merge :: Semilazy a -> Semilazy a -> Semilazy a
+\par merge (SL s1 ls1) (SL s2 ls2) =
+\par ~~  SL (s1 `Set.merge` s2) (ls1 `merge` ls2)
+}
+
+\bigskip
+
+\pause
+No, because it does not maintain the invariant:
+
+\bigskip
+
+{\tt
+\par merge (SL empty [0..]) (SL (Set.fromList [10]) []) =
+\par ~~ SL (Set.fromList [10] [0..])
+}
+
+\bigskip
+
+\pause
+Valid implementation:
+
+\bigskip
+
+{\tt
+\par merge (SL s1 (l1:ls1)) (SL s2 (l2:ls2))
+\par ~  | l1 < l2, (xs, ys) <- span (< l2) ls1
+\par ~  = SL (s1 `Set.merge` Set.fromList xs `Set.merge` s2) (ys `merge` ls2)
+\par ~  | otherwise = ...
+}
+
+\end{frame}
+
+\begin{frame}{Semilazy sets --- 3}
+
+To be as lazy as possible
+the actual implementation maintains not only a strict init
+and a lazy tail, but also a position of delimiter between them.
+
+\bigskip
+
+{\tt
+\par data Delimiter a = Bottom | Middle a | Top
+\par ~
+\par data Ascension a = Ascension
+\par ~~  \{ strictInit :: Set a
+\par ~~  ,  delimiter~ :: Delimiter a
+\par ~~  ,  lazyTail~~ :: [a]
+\par ~~  \}
+}
+
+\bigskip
+
+\pause
+Available from {\tt https://github.com/Bodigrim/ascension}
+
+\end{frame}
+
+\begin{frame}{Full speed astern}
+
+It is still not entirely satisfying, because lookups take
+between $O(\log n)$ and $O(n)$ time.
+Can we achieve amortized $O(1)$ time?
+
+\bigskip
+
+\pause
+In finite setting when lookups become a bottleneck and inserts are rare,
+one can use a bit array. The set is represented by a raw region of memory,
+where $i$-th bit equals to 1 when $i$ is an element of the set and equals to 0
+otherwise. By the vary nature bit arrays are strict: there is simply no space
+to store any pointer to deferred computation.
+
+\bigskip
+
+\pause
+Bit arrays provide superfast set intersection / union
+by means of bitwise and / or.
+
+\bigskip
+
+\pause
+There is a Haskell implementation of bit arrays in {\tt bitvec} package.
+
+\bigskip
+
+\pause
+Can we implement an infinite bit array? Since it is infinite
+it must somehow involve laziness.
+
+\end{frame}
+
+\begin{frame}{Tricks from a can of worms}
+
+How do dynamic arrays
+work in imperative languages? They occupy memory
+enough to store $2^k$ elements. While the actual size remains below
+$2^k$, appending new elements does not require reallocation.
+Only when the size rises beyond $2^k$, new chunk of $2^{k+1}$ size
+is allocated and the existing array is copied there.
+
+\bigskip
+
+\pause
+
+Let us have an infinite lazy list of strict bit arrays of growing size:
+
+[ptr to 64 bit block, ptr to 128 bit block, ptr to 256 bit block, ...]
+
+\bigskip
+
+\pause
+The lookup function takes an index $n$,
+traverses the outer list to extract $m = \log_2 (n/64)$-th element
+and returns the relevant bit. For example, to check whether 200 is an
+element we traverse until the 3-rd block
+and return its $200-(64+128) = 8$-th bit.
+
+\bigskip
+
+\pause
+It is better to store bit blocks in a lazy array with instant indexing.
+Since chunks grow rapidly, for all practical applications
+an outer array of size 64 will suffice. This gives us amortized $O(1)$ indexing.
+
+\end{frame}
+
+\begin{frame}{Chimera}
+
+This approach (lazy outer array of pointers to growing inner arrays)
+can be generalized from storing bits to storing any data \pause and
+is implemented in {\tt chimera} package.
+
+\bigskip
+
+{\tt data Chimera a = Vector (Vector a)}
+
+\bigskip
+
+\pause
+
+{\tt tabulate} takes predicate and returns an infinite bit array:
+
+\bigskip
+
+{\tt \par tabulate :: (Word -> a) -> Chimera a}
+
+\bigskip
+
+\pause
+
+{\tt index} implements random access in $O(1)$ amortized time:
+
+\bigskip
+
+{\tt \par index~~~ :: Chimera a -> (Word -> a)}
+
+\end{frame}
+
+\begin{frame}{Caching}
+
+Let us use {\tt tabulate} and {\tt index} to get a fully functional caching
+in a purely functional and performant manner:
+
+\bigskip
+
+{\tt
+\par expensive :: Word -> a
+\par expensive x = <heat\_cpu\_for\_ten\_minutes>
+\par ~
+\par cache :: Chimera a
+\par cache = tabulate expensive
+\par ~
+\par cheap :: Word -> a
+\par cheap = index cache
+}
+
+\end{frame}
+
+
+\begin{frame}{Fibonacci 101}
+Let us define Fibonacci numbers in a na\"{\i}ve, exponential way:
+
+\bigskip
+
+{\tt
+\par fibo :: Word -> Natural
+\par fibo n = if n < 2 then n else fibo (n-1) + fibo (n-2)
+}
+
+\bigskip
+
+\pause
+
+We can cache it as is:
+
+\bigskip
+
+{\tt
+\par fiboCache :: Chimera Natural
+\par fiboCache = tabulate fibo
+\par ~
+\par fibo' :: Word -> Natural
+\par fibo' = index fiboCache
+}
+
+\bigskip
+
+But recursive calls still know nothing about cache. Can we make them aware of?
+
+\end{frame}
+
+
+\begin{frame}{Fixed-point combinator}
+\pause
+Any recursive function can be expressed as a non-recursive one and the {\tt fix} combinator
+a.~k.~a. Y~combinator.
+
+\bigskip
+
+{\tt
+\par fix :: (a -> a) -> a
+\par fix f = let x = f x in x
+}
+
+\bigskip
+
+\pause
+
+{\tt
+\par fiboFix :: (Word -> Natural) -> (Word -> Natural)
+\par fiboFix f n = if n < 2 then n else f (n-1) + f (n-2)
+\par ~
+\par fibo :: (Word -> Natural)
+\par fibo = fix fiboFix
+}
+
+\bigskip
+
+\pause
+Now use {\tt tabulateFix} to cache all recursive calls as well:
+
+\bigskip
+
+{\tt
+\par fiboCache = tabulateFix fiboFix :: Chimera Natural
+\par ~
+\par fibo = index fiboCache :: Word -> Natural
+}
+
+\end{frame}
+
+\begin{frame}{Summary}
+
+\begin{itemize}
+\item Hybrid combination of a strict binary search tree and a lazy list
+      allows to work with infinite sets.
+\pause
+\item If lookups become a bottleneck, one can trade space for speed
+      and switch to an infinite bit mask,
+      hybrid of a lazy array and a bit array.
+\pause
+\item The latter approach can be generalized to store any data, applicable
+      for transparent caching of functions, including recursive ones.
+\end{itemize}
+
+\bigskip
+\bigskip
+
+\pause
+\centerline{\Huge\bf Thank you!}
+\end{frame}
+
+\end{document}
