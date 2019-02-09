@@ -10,16 +10,17 @@
 \usepackage{listings}
 \usepackage{color}
 \usepackage{amsmath}
+\usepackage{changepage}
 
 \definecolor{dkgreen}{rgb}{0,0.6,0}
 \definecolor{gray}{rgb}{0.5,0.5,0.5}
 \definecolor{mauve}{rgb}{0.58,0,0.82}
 
-\lstset{frame=tb,
+\lstset{
   language=Haskell,
   showstringspaces=false,
   columns=flexible,
-  basicstyle={\scriptsize\ttfamily},
+  basicstyle={\small\ttfamily},
   numbers=none,
   numberstyle=\tiny\color{gray},
   keywordstyle=\color{blue},
@@ -108,7 +109,7 @@
 
 \end{frame}
 
-\begin{frame}[fragile]{Example: $n$-body problem}
+\begin{frame}[fragile]{Example: $n$-body problem, {\normalsize youtube.com/embed/qIVe\_xEv6zQ}}
 
 \begin{itemize}
 \item {\tt m[i]} is the mass of {\tt i}-th object (is known in compile time),
@@ -134,11 +135,11 @@ foreach i in 1..n
    y[i] =   y[i] + vy[i] * dt
 \end{lstlisting}
 
-\centerline{https://www.youtube.com/embed/qIVe\_xEv6zQ}
-
 \end{frame}
 
 \begin{frame}[fragile]{Abstract syntax tree: types}
+
+\vspace{-1ex}
 
 Loop counters and variables are annotated with sizes on type level.
 
@@ -209,8 +210,7 @@ For a given {\tt c} build a vector {\tt [c, c+1...]}, square up its elements and
 , ret   := 0
 , For i
   [ ret := Ref ret + Ref (b!i) ] ]
-where
-  a = "a"; b = "b"; c = "c"; ret = "ret"; i = "i"
+where a = "a"; b = "b"; c = "c"; ret = "ret"; i = "i"
 \end{lstlisting}
 
 Optimized:
@@ -220,8 +220,7 @@ Optimized:
   For i
   [ ret := Ref ret + Ref c :^ 2
   , c   := Ref c + 1 ]
-where
-  c = "c"; ret = "ret"; i = "i"
+where c = "c"; ret = "ret"; i = "i"
 \end{lstlisting}
 
 \end{frame}
@@ -346,8 +345,7 @@ ret = c    -- {c}
 \end{frame}
 
 \begin{frame}[fragile]{Dead code: loops}
-
-\vspace{-1.5ex}
+\begin{adjustwidth}{-1em}{-1em}
 
 \begin{itemize}
 \item Loops change control flow and are executed one or more times.
@@ -355,28 +353,37 @@ ret = c    -- {c}
 \item Then unite obtained live set with the live set at the end of loop and perform actual pass.
 \end{itemize}
 
-\begin{lstlisting}
-a = 0              -- {}
-for i
-  b[i] = a         -- {a} / {a}
-  a = b[i] + 1     -- {b} / {b}
-end                -- {b} / {a, b}
-ret = 0            -- {b}
-for i
-  ret = ret + b[i] -- {ret, b} / {ret, b}
-end                -- {ret}    / {ret, b}
-\end{lstlisting}
+\bigskip
+
+\begin{tabular}{l@{}r}
 
 \begin{lstlisting}
-a = 0              -- {}, remove
+a = 0           -- {}
 for i
-  b[i] = a         -- {} / {}, remove
-  a = b[i] + 1     -- {} / {}, remove
-end                -- {} / {}
-ret = 0            -- {}
-                   -- {ret}
+  b[i] = a      -- {a} / {a}
+  a = b[i] + 1  -- {b} / {b}
+end             -- {b} / {a, b}
+r = 0           -- {b}
+for i
+  r = r + b[i]  -- {r, b} / {r, b}
+end             -- {r}    / {r, b}
 \end{lstlisting}
 
+&
+
+\begin{lstlisting}
+a = 0           -- {}, remove
+for i
+  b[i] = a      -- {} / {}, remove
+  a = b[i] + 1  -- {} / {}, remove
+end             -- {} / {}
+r = 0           -- {}
+                -- {r}
+\end{lstlisting}
+
+\end{tabular}
+
+\end{adjustwidth}
 \end{frame}
 
 \begin{frame}[fragile]{Inlining: a time to rend, and a time to sew}
@@ -403,11 +410,12 @@ Use cases:
 \end{frame}
 
 \begin{frame}[fragile]{Inlining: example}
+\begin{adjustwidth}{-1.5em}{-1.5em}
 
 \begin{lstlisting}
 a = 2                  a = 2
 b = x + a              b = x + 2 -- inline constants
-c = b                  c = x + 2 -- b is a one-shot vriable
+c = b                  c = x + 2 -- b is a one-shot variable
 d = c + 1              d = x + 3 -- non-growing local optimizations
 e = c * 2              e = c * 2 --  x * 2 + 4 is larger
 f = c ^ 3              f = c ^ 3 -- (x + 2) ^ 3 is larger
@@ -415,6 +423,7 @@ g = d * e * f * f      g = (x + 3) * (c * 2) * f * f
                                   -- d and e are one-shot variables
 \end{lstlisting}
 
+\end{adjustwidth}
 \end{frame}
 
 \begin{frame}[fragile]{Loop fusion: a time to break down and a time to build up}
@@ -433,7 +442,7 @@ for i
   z[i] = y[i] * 3
 \end{lstlisting}
 
-\centerline{\tt map f . map g = map (f . g)}
+\centerline{map f . map g = map (f . g)}
 
 \begin{lstlisting}
 for i
@@ -463,7 +472,7 @@ for i
   ret = ret + y[i] * 3
 \end{lstlisting}
 
-\centerline{\tt foldr f x . map g = foldr (f . g) x}
+\centerline{foldr f x . map g = foldr (f . g) x}
 
 \begin{lstlisting}
 ret = 0
@@ -509,12 +518,9 @@ for i ret = ret * 2 + y[i]
 
 \begin{lstlisting}
 ret = 0
-for i
-  y[i] = x[i] * 2
-for i
-  z[i] = y[i] * 3
-for i
-  ret = ret * 2 + y[i]
+for i y[i] = x[i] * 2
+for i z[i] = y[i] * 3
+for i ret = ret * 2 + y[i]
 \end{lstlisting}
 
 Apply {\tt map/map} rule:
