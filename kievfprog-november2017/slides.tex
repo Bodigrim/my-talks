@@ -16,18 +16,90 @@
 \definecolor{gray}{rgb}{0.5,0.5,0.5}
 \definecolor{mauve}{rgb}{0.58,0,0.82}
 
+\lstdefinelanguage{Haskell}%
+  {otherkeywords={},%
+   morekeywords={as,abstype,if,then,else,case,class,data,default,deriving,%
+      hiding,if,in,infix,infixl,infixr,import,instance,let,module,%
+      newtype,of,qualified,type,where,do,AbsoluteSeek,AppendMode,%
+      Array,BlockBuffering,Bool,BufferMode,Char,Complex,Double,Either,%
+      FilePath,Float,Int,Word,Integer,Natural,IO,IOError,Ix,LineBuffering,Maybe,%
+      Ordering,NoBuffering,ReadMode,ReadWriteMode,ReadS,RelativeSeek,%
+      SeekFromEnd,SeekMode,ShowS,StdGen,String,Void,Bounded,Enum,Eq,%
+      Eval,ExitCode,exitFailure,exitSuccess,Floating,Fractional,%
+      Functor,Handle,HandlePosn,IOMode,Integral,List,Monad,MonadPlus,%
+      MonadZero,Num,Numeric,Ord,Random,RandomGen,Ratio,Rational,Read,%
+      Real,RealFloat,RealFrac,Show,System,Prelude,EQ,False,GT,Just,%
+      Left,LT,Nothing,Right,WriteMode,True,abs,accum,accumArray,%
+      accumulate,acos,acosh,all,and,any,ap,appendFile,applyM,%
+      approxRational,array,asTypeOf,asin,asinh,assocs,atan,atan2,atanh,%
+      bounds,bracket,bracket_,break,catch,catMaybes,ceiling,chr,cis,%
+      compare,concat,concatMap,conjugate,const,cos,cosh,curry,cycle,%
+      decodeFloat,delete,deleteBy,deleteFirstsBy,denominator,%
+      digitToInt,div,divMod,drop,dropWhile,either,elem,elems,elemIndex,%
+      elemIndices,encodeFloat,enumFrom,enumFromThen,enumFromThenTo,%
+      enumFromTo,error,even,exitFailure,exitWith,fail,%
+      filter,filterM,find,findIndex,findIndices,flip,floatDigits,%
+      floatRadix,floatRange,floatToDigits,floor,foldl,foldM,foldl1,%
+      foldr,foldr1,fromDouble,fromEnum,fromInt,fromInteger,%
+      toInteger,fromJust,fromMaybe,fromRat,fromRational,%
+      fromRealFrac,fst,gcd,genericLength,genericTake,genericDrop,%
+      genericSplitAt,genericIndex,genericReplicate,getArgs,getChar,%
+      getContents,getEnv,getLine,getProgName,getStdGen,getStdRandom,%
+      group,groupBy,guard,hClose,hFileSize,hFlush,hGetBuffering,%
+      hGetChar,hGetContents,hGetLine,hGetPosn,hIsClosed,hIsEOF,hIsOpen,%
+      hIsReadable,hIsSeekable,hIsWritable,hLookAhead,hPutChar,hPutStr,%
+      hPutStrLn,hPrint,hReady,hSeek,hSetBuffering,hSetPosn,head,%
+      hugsIsEOF,hugsHIsEOF,hugsIsSearchErr,hugsIsNameErr,%
+      hugsIsWriteErr,id,ioError,imagPart,indices,init,inits,%
+      inRange,insert,insertBy,interact,intersect,intersectBy,%
+      intersperse,intToDigit,ioeGetErrorString,ioeGetFileName,%
+      ioeGetHandle,isAlreadyExistsError,isAlreadyInUseError,isAlpha,%
+      isAlphaNum,isAscii,isControl,isDenormalized,isDoesNotExistError,%
+      isDigit,isEOF,isEOFError,isFullError,isHexDigit,isIEEE,%
+      isIllegalOperation,isInfinite,isJust,isLower,isNaN,%
+      isNegativeZero,isNothing,isOctDigit,isPermissionError,isPrefixOf,%
+      isPrint,isSpace,isSuffixOf,isUpper,isUserError,iterate,ixmap,%
+      join,last,lcm,length,lex,lexDigits,lexLitChar,liftM,liftM2,%
+      liftM3,liftM4,liftM5,lines,listArray,listToMaybe,log,logBase,%
+      lookup,magnitude,makePolar,map,mapAccumL,mapAccumR,mapAndUnzipM,%
+      mapM,mapM_,mapMaybe,max,maxBound,maximum,maximumBy,maybe,%
+      maybeToList,min,minBound,minimum,minimumBy,mkPolar,mkStdGen,%
+      mplus,mod,msum,mzero,negate,next,newStdGen,not,notElem,nub,nubBy,%
+      null,numerator,odd,openFile,or,ord,otherwise,partition,phase,pi,%
+      polar,pred,print,product,properFraction,putChar,putStr,putStrLn,%
+      quot,quotRem,random,randomIO,randomR,randomRIO,randomRs,randoms,%
+      rangeSize,read,readDec,readFile,readFloat,readHex,readInt,readIO,%
+      readList,readLitChar,readLn,readParen,readOct,readSigned,reads,%
+      readsPrec,realPart,realToFrac,recip,rem,repeat,replicate,return,%
+      reverse,round,scaleFloat,scanl,scanl1,scanr,scanr1,seq,sequence,%
+      sequence_,setStdGen,show,showChar,showEFloat,showFFloat,%
+      showFloat,showGFloat,showInt,showList,showLitChar,showParen,%
+      showSigned,showString,shows,showsPrec,significand,signum,sin,%
+      sinh,snd,sort,sortBy,span,split,splitAt,sqrt,stderr,stdin,stdout,%
+      strict,subtract,succ,sum,system,tail,tails,take,takeWhile,tan,%
+      tanh,toEnum,toInt,toInteger,toLower,toRational,toUpper,transpose,%
+      truncate,try,uncurry,undefined,unfoldr,union,unionBy,unless,%
+      unlines,until,unwords,unzip,unzip3,unzip4,unzip5,unzip6,unzip7,%
+      userError,when,words,writeFile,zero,zip,zip3,zip4,zip5,zip6,zip7,%
+      zipWith,zipWithM,zipWithM_,zipWith3,zipWith4,zipWith5,zipWith6,%
+      zipWith7},%
+   sensitive,%
+   morecomment=[l]--,%
+   morecomment=[n]{\{-}{-\}},%
+   morestring=[b]"%
+  }[keywords,comments,strings]%
+
 \lstset{
   language=Haskell,
   showstringspaces=false,
   columns=flexible,
-  basicstyle={\small\ttfamily},
+  keepspaces=true,
+  basicstyle={\ttfamily},
   numbers=none,
   numberstyle=\tiny\color{gray},
   keywordstyle=\color{blue},
   commentstyle=\color{dkgreen},
-  stringstyle=\color{mauve},
-  breaklines=true,
-  breakatwhitespace=true
+  stringstyle=\color{mauve}
 }
 
 \title{Number theory in Haskell}
@@ -309,19 +381,17 @@ Can we write more efficient implementations for concrete types?
 
 \begin{lstlisting}
 powModWord :: Word -> Word -> Word -> Word
-powModWord (W# x) (W# y) (W# m) = W# (f x y 1##)
-  where
-    f :: Word# -> Word# -> Word# -> Word#
-    f x 0## z = 1##
-    f x 1## z = timesMod x z m
-    f x y   z = f (timesMod x x m) (y `uncheckedShiftRL#` 1#)
-      (if odd# y then (timesMod x z m) else z)
+powModWord (W# x) (W# y) (W# m) = W# (f x y 1##) where
+  f :: Word# -> Word# -> Word# -> Word#
+  f x 0## z = 1##
+  f x 1## z = timesMod x z m
+  f x y   z = f (timesMod x x m) (y `uncheckedShiftRL#` 1#)
+    (if odd# y then (timesMod x z m) else z)
 
 timesMod :: Word# -> Word# -> Word# -> Word#
-timesMod x y m = r
-  where
-    (# hi, lo #) = timesWord2# x y
-    (#  q, r  #) = quotRemWord2# hi lo m
+timesMod x y m = r where
+  (# hi, lo #) = timesWord2# x y
+  (#  q, r  #) = quotRemWord2# hi lo m
 
 odd# :: Word# -> Bool
 odd# w = isTrue# (word2Int# (w `and#` 1##))
@@ -337,8 +407,8 @@ Specialize {\tt powMod} for common use cases.
 {-# RULES
   "powMod/Integer" powMod = powModInteger
   "powMod/Natural" powMod = powModNatural
-  "powMod/Int"       powMod = powModInt
-  "powMod/Word"      powMod = powModWord
+  "powMod/Int"     powMod = powModInt
+  "powMod/Word"    powMod = powModWord
   #-}
 \end{lstlisting}
 
@@ -353,7 +423,7 @@ Mark {\tt powMod} inlinable:
 \begin{frame}
 \centerline{\Huge\bf Thank you!}
 \bigskip
-\centerline{\huge\bf github.com/cartazio/arithmoi}
+\centerline{\huge\bf github.com/Bodigrim/arithmoi}
 \end{frame}
 
 \end{document}

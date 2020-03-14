@@ -17,11 +17,11 @@
 
 \lstdefinelanguage{Haskell}%
   {otherkeywords={},%
-   morekeywords={abstype,if,then,else,case,class,data,default,deriving,%
+   morekeywords={as,abstype,if,then,else,case,class,data,default,deriving,%
       hiding,if,in,infix,infixl,infixr,import,instance,let,module,%
       newtype,of,qualified,type,where,do,AbsoluteSeek,AppendMode,%
       Array,BlockBuffering,Bool,BufferMode,Char,Complex,Double,Either,%
-      FilePath,Float,Int,Integer,IO,IOError,Ix,LineBuffering,Maybe,%
+      FilePath,Float,Int,Word,Integer,Natural,IO,IOError,Ix,LineBuffering,Maybe,%
       Ordering,NoBuffering,ReadMode,ReadWriteMode,ReadS,RelativeSeek,%
       SeekFromEnd,SeekMode,ShowS,StdGen,String,Void,Bounded,Enum,Eq,%
       Eval,ExitCode,exitFailure,exitSuccess,Floating,Fractional,%
@@ -40,7 +40,7 @@
       filter,filterM,find,findIndex,findIndices,flip,floatDigits,%
       floatRadix,floatRange,floatToDigits,floor,foldl,foldM,foldl1,%
       foldr,foldr1,fromDouble,fromEnum,fromInt,fromInteger,%
-      fromIntegral,fromJust,fromMaybe,fromRat,fromRational,%
+      toInteger,fromJust,fromMaybe,fromRat,fromRational,%
       fromRealFrac,fst,gcd,genericLength,genericTake,genericDrop,%
       genericSplitAt,genericIndex,genericReplicate,getArgs,getChar,%
       getContents,getEnv,getLine,getProgName,getStdGen,getStdRandom,%
@@ -49,7 +49,7 @@
       hIsReadable,hIsSeekable,hIsWritable,hLookAhead,hPutChar,hPutStr,%
       hPutStrLn,hPrint,hReady,hSeek,hSetBuffering,hSetPosn,head,%
       hugsIsEOF,hugsHIsEOF,hugsIsSearchErr,hugsIsNameErr,%
-      hugsIsWriteErr,id,ioError,imagPart,index,indices,init,inits,%
+      hugsIsWriteErr,id,ioError,imagPart,indices,init,inits,%
       inRange,insert,insertBy,interact,intersect,intersectBy,%
       intersperse,intToDigit,ioeGetErrorString,ioeGetFileName,%
       ioeGetHandle,isAlreadyExistsError,isAlreadyInUseError,isAlpha,%
@@ -92,15 +92,13 @@
   language=Haskell,
   showstringspaces=false,
   columns=flexible,
+  keepspaces=true,
   basicstyle={\ttfamily},
   numbers=none,
   numberstyle=\tiny\color{gray},
   keywordstyle=\color{blue},
   commentstyle=\color{dkgreen},
-  stringstyle=\color{mauve},
-  breaklines=true,
-  breakatwhitespace=true,
-  tabsize=2
+  stringstyle=\color{mauve}
 }
 
 \title[Dependent bookkeeping]{Dependent types in Haskell and bookkeeping}
@@ -374,7 +372,7 @@ instance KnownNat exp => Num (Decimal exp) where
   signum = coerce (signum @Integer)
 
   fromInteger m = let dec = Decimal (m * 10 ^ exp dec)
-                    in  dec
+                  in  dec
 \end{lstlisting}
 
 \centerline{Note the self-recurrent expression!}

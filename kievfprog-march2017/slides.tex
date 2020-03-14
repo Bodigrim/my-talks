@@ -16,19 +16,90 @@
 \definecolor{gray}{rgb}{0.5,0.5,0.5}
 \definecolor{mauve}{rgb}{0.58,0,0.82}
 
+\lstdefinelanguage{Haskell}%
+  {otherkeywords={},%
+   morekeywords={as,abstype,if,then,else,case,class,data,default,deriving,%
+      hiding,if,in,infix,infixl,infixr,import,instance,let,module,%
+      newtype,of,qualified,type,where,do,AbsoluteSeek,AppendMode,%
+      Array,BlockBuffering,Bool,BufferMode,Char,Complex,Double,Either,%
+      FilePath,Float,Int,Word,Integer,Natural,IO,IOError,Ix,LineBuffering,Maybe,%
+      Ordering,NoBuffering,ReadMode,ReadWriteMode,ReadS,RelativeSeek,%
+      SeekFromEnd,SeekMode,ShowS,StdGen,String,Void,Bounded,Enum,Eq,%
+      Eval,ExitCode,exitFailure,exitSuccess,Floating,Fractional,%
+      Functor,Handle,HandlePosn,IOMode,Integral,List,Monad,MonadPlus,%
+      MonadZero,Num,Numeric,Ord,Random,RandomGen,Ratio,Rational,Read,%
+      Real,RealFloat,RealFrac,Show,System,Prelude,EQ,False,GT,Just,%
+      Left,LT,Nothing,Right,WriteMode,True,abs,accum,accumArray,%
+      accumulate,acos,acosh,all,and,any,ap,appendFile,applyM,%
+      approxRational,array,asTypeOf,asin,asinh,assocs,atan,atan2,atanh,%
+      bounds,bracket,bracket_,break,catch,catMaybes,ceiling,chr,cis,%
+      compare,concat,concatMap,conjugate,const,cos,cosh,curry,cycle,%
+      decodeFloat,delete,deleteBy,deleteFirstsBy,denominator,%
+      digitToInt,div,divMod,drop,dropWhile,either,elem,elems,elemIndex,%
+      elemIndices,encodeFloat,enumFrom,enumFromThen,enumFromThenTo,%
+      enumFromTo,error,even,exitFailure,exitWith,fail,%
+      filter,filterM,find,findIndex,findIndices,flip,floatDigits,%
+      floatRadix,floatRange,floatToDigits,floor,foldl,foldM,foldl1,%
+      foldr,foldr1,fromDouble,fromEnum,fromInt,fromInteger,%
+      toInteger,fromJust,fromMaybe,fromRat,fromRational,%
+      fromRealFrac,fst,gcd,genericLength,genericTake,genericDrop,%
+      genericSplitAt,genericIndex,genericReplicate,getArgs,getChar,%
+      getContents,getEnv,getLine,getProgName,getStdGen,getStdRandom,%
+      group,groupBy,guard,hClose,hFileSize,hFlush,hGetBuffering,%
+      hGetChar,hGetContents,hGetLine,hGetPosn,hIsClosed,hIsEOF,hIsOpen,%
+      hIsReadable,hIsSeekable,hIsWritable,hLookAhead,hPutChar,hPutStr,%
+      hPutStrLn,hPrint,hReady,hSeek,hSetBuffering,hSetPosn,head,%
+      hugsIsEOF,hugsHIsEOF,hugsIsSearchErr,hugsIsNameErr,%
+      hugsIsWriteErr,id,ioError,imagPart,indices,init,inits,%
+      inRange,insert,insertBy,interact,intersect,intersectBy,%
+      intersperse,intToDigit,ioeGetErrorString,ioeGetFileName,%
+      ioeGetHandle,isAlreadyExistsError,isAlreadyInUseError,isAlpha,%
+      isAlphaNum,isAscii,isControl,isDenormalized,isDoesNotExistError,%
+      isDigit,isEOF,isEOFError,isFullError,isHexDigit,isIEEE,%
+      isIllegalOperation,isInfinite,isJust,isLower,isNaN,%
+      isNegativeZero,isNothing,isOctDigit,isPermissionError,isPrefixOf,%
+      isPrint,isSpace,isSuffixOf,isUpper,isUserError,iterate,ixmap,%
+      join,last,lcm,length,lex,lexDigits,lexLitChar,liftM,liftM2,%
+      liftM3,liftM4,liftM5,lines,listArray,listToMaybe,log,logBase,%
+      lookup,magnitude,makePolar,map,mapAccumL,mapAccumR,mapAndUnzipM,%
+      mapM,mapM_,mapMaybe,max,maxBound,maximum,maximumBy,maybe,%
+      maybeToList,min,minBound,minimum,minimumBy,mkPolar,mkStdGen,%
+      mplus,mod,msum,mzero,negate,next,newStdGen,not,notElem,nub,nubBy,%
+      null,numerator,odd,openFile,or,ord,otherwise,partition,phase,pi,%
+      polar,pred,print,product,properFraction,putChar,putStr,putStrLn,%
+      quot,quotRem,random,randomIO,randomR,randomRIO,randomRs,randoms,%
+      rangeSize,read,readDec,readFile,readFloat,readHex,readInt,readIO,%
+      readList,readLitChar,readLn,readParen,readOct,readSigned,reads,%
+      readsPrec,realPart,realToFrac,recip,rem,repeat,replicate,return,%
+      reverse,round,scaleFloat,scanl,scanl1,scanr,scanr1,seq,sequence,%
+      sequence_,setStdGen,show,showChar,showEFloat,showFFloat,%
+      showFloat,showGFloat,showInt,showList,showLitChar,showParen,%
+      showSigned,showString,shows,showsPrec,significand,signum,sin,%
+      sinh,snd,sort,sortBy,span,split,splitAt,sqrt,stderr,stdin,stdout,%
+      strict,subtract,succ,sum,system,tail,tails,take,takeWhile,tan,%
+      tanh,toEnum,toInt,toInteger,toLower,toRational,toUpper,transpose,%
+      truncate,try,uncurry,undefined,unfoldr,union,unionBy,unless,%
+      unlines,until,unwords,unzip,unzip3,unzip4,unzip5,unzip6,unzip7,%
+      userError,when,words,writeFile,zero,zip,zip3,zip4,zip5,zip6,zip7,%
+      zipWith,zipWithM,zipWithM_,zipWith3,zipWith4,zipWith5,zipWith6,%
+      zipWith7},%
+   sensitive,%
+   morecomment=[l]--,%
+   morecomment=[n]{\{-}{-\}},%
+   morestring=[b]"%
+  }[keywords,comments,strings]%
+
 \lstset{
   language=Haskell,
   showstringspaces=false,
   columns=flexible,
-  basicstyle={\small\ttfamily},
+  keepspaces=true,
+  basicstyle={\ttfamily},
   numbers=none,
   numberstyle=\tiny\color{gray},
   keywordstyle=\color{blue},
   commentstyle=\color{dkgreen},
-  stringstyle=\color{mauve},
-  breaklines=true,
-  breakatwhitespace=true,
-  tabsize=2
+  stringstyle=\color{mauve}
 }
 
 \title{Optimizing compiler}
@@ -119,8 +190,7 @@
 \end{itemize}
 
 \begin{lstlisting}
-dt = 0.001
-G  = 6.67e-11
+dt = 0.001; G = 6.67e-11
 foreach i in 1..n
   ax[i] = 0
   ay[i] = 0
@@ -131,15 +201,15 @@ foreach i in 1..n
 foreach i in 1..n
   vx[i] = vx[i] + ax[i] * dt
   vy[i] = vy[i] + ay[i] * dt
-   x[i] =   x[i] + vx[i] * dt
-   y[i] =   y[i] + vy[i] * dt
+   x[i] =  x[i] + vx[i] * dt
+   y[i] =  y[i] + vy[i] * dt
 \end{lstlisting}
 
 \end{frame}
 
 \begin{frame}[fragile]{Abstract syntax tree: types}
 
-\vspace{-1ex}
+\vspace{-0.5ex}
 
 Loop counters and variables are annotated with sizes on type level.
 
@@ -149,8 +219,6 @@ data Reference (arity :: [Nat]) where
   V    :: String -> Reference xs
   (:!) :: Reference (x : xs) -> Counter x -> Reference xs
 \end{lstlisting}
-
-Expressions are simple:
 
 \begin{lstlisting}
 data Expr a where
@@ -162,8 +230,6 @@ data Expr a where
   (:<) :: Expr Double -> Expr Double -> Expr Bool
   If   :: Expr Bool -> Expr a -> Expr a -> Expr a
 \end{lstlisting}
-
-And statements are even simpler:
 
 \begin{lstlisting}
 data Stmt where
@@ -199,7 +265,7 @@ a || b = If a a b
 
 \begin{frame}[fragile]{Code example}
 
-For a given {\tt c} build a vector {\tt [c, c+1...]}, square up its elements and return their sum.
+Return the sum of squares of {\tt [c, c+1...]}.
 
 \begin{lstlisting}
 [ For i
@@ -358,27 +424,28 @@ ret = c    -- {c}
 \begin{tabular}{l@{}r}
 
 \begin{lstlisting}
-a = 0           -- {}
+a = 0          -- {}
 for i
-  b[i] = a      -- {a} / {a}
-  a = b[i] + 1  -- {b} / {b}
-end             -- {b} / {a, b}
-r = 0           -- {b}
+  b[i] = a     -- {a} / {a}
+  a = b[i] + 1 -- {b} / {b}
+end            -- {b} / {a,b}
+r = 0          -- {b}
 for i
-  r = r + b[i]  -- {r, b} / {r, b}
-end             -- {r}    / {r, b}
+  r = r + b[i] -- {r,b} / {r,b}
+end            -- {r}   / {r,b}
 \end{lstlisting}
 
 &
 
+\hspace{-1.5em}
 \begin{lstlisting}
-a = 0           -- {}, remove
+a = 0          -- {}, remove
 for i
-  b[i] = a      -- {} / {}, remove
-  a = b[i] + 1  -- {} / {}, remove
-end             -- {} / {}
-r = 0           -- {}
-                -- {r}
+  b[i] = a     -- {} / {}, remove
+  a = b[i] + 1 -- {} / {}, remove
+end            -- {} / {}
+r = 0          -- {}
+               -- {r}
 \end{lstlisting}
 
 \end{tabular}
@@ -413,14 +480,14 @@ Use cases:
 \begin{adjustwidth}{-1.5em}{-1.5em}
 
 \begin{lstlisting}
-a = 2                  a = 2
-b = x + a              b = x + 2 -- inline constants
-c = b                  c = x + 2 -- b is a one-shot variable
-d = c + 1              d = x + 3 -- non-growing local optimizations
-e = c * 2              e = c * 2 --  x * 2 + 4 is larger
-f = c ^ 3              f = c ^ 3 -- (x + 2) ^ 3 is larger
-g = d * e * f * f      g = (x + 3) * (c * 2) * f * f
-                                  -- d and e are one-shot variables
+a = 2              a = 2
+b = x + a          b = x + 2 -- inline constants
+c = b              c = x + 2 -- b is a one-shot variable
+d = c + 1          d = x + 3 -- non-growing local optimization
+e = c * 2          e = c * 2 --  x * 2 + 4 is larger
+f = c ^ 3          f = c ^ 3 -- (x + 2) ^ 3 is larger
+g = d * e * f * f  g = (x + 3) * (c * 2) * f * f
+                             -- d and e are one-shot variables
 \end{lstlisting}
 
 \end{adjustwidth}
@@ -454,6 +521,8 @@ for i
 
 \begin{frame}[fragile]{Loop fusion: {\tt map/fold} rule}
 
+\vspace{-1ex}
+
 \begin{lstlisting}
 for i
   y[i] = x[i] * 2
@@ -485,6 +554,8 @@ for i
 
 \begin{frame}[fragile]{Loop fission - 1}
 
+\vspace{-1ex}
+
 \begin{lstlisting}
 ret = 0
 for i
@@ -515,6 +586,8 @@ for i ret = ret * 2 + y[i]
 \end{frame}
 
 \begin{frame}[fragile]{Loop fission - 2}
+
+\vspace{-1ex}
 
 \begin{lstlisting}
 ret = 0
