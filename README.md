@@ -24,4 +24,4 @@
   [slides](https://github.com/Bodigrim/my-talks/raw/master/kievfprog-march2017/slides.pdf).
 
 * __All sorts of permutations__, Papers We Love, Kiev, 22.10.2016:
-  [slides](https://bodigrim.github.io/all-sorts/).
+  [slides](https://github.com/Bodigrim/my-talks/raw/master/paperswelove2016/slides.pdf).
