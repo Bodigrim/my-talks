@@ -3,7 +3,8 @@
 * __Lazy streams with O(1) access__, London Haskell, London, 25.02.2020:
   [slides](https://github.com/Bodigrim/my-talks/raw/master/londonhaskell2020/slides.pdf).
 
-* __Haskell for mathematical libraries__, Lambda Days 2020, Kraków, 13.02.2020.
+* __Haskell for mathematical libraries__, Lambda Days 2020, Kraków, 13.02.2020:
+  [slides](https://github.com/Bodigrim/my-talks/raw/master/lambdadays2020/slides.pdf).
 
 * __Backtracking, interleaving, and terminating monad transformers__, Papers We Love, London, 29.10.2019:
   [slides](https://github.com/Bodigrim/my-talks/raw/master/paperswelove2019/slides.pdf),

@@ -10,3 +10,4 @@
 *.vrb
 *.synctex.gz
 .DS_Store
+*-eps-converted-to.pdf
