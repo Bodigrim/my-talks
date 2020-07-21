@@ -1,5 +1,8 @@
 # My talks
 
+* __Enum instances on steroids__, Berlin Functional Programming Group, 21.07.2020:
+  [slides](https://github.com/Bodigrim/my-talks/raw/master/berlinfpg2020/slides.pdf).
+
 * __Lazy streams with O(1) access__, London Haskell, London, 25.02.2020:
   [slides](https://github.com/Bodigrim/my-talks/raw/master/londonhaskell2020/slides.pdf).
 
