@@ -1,0 +1,554 @@
+\documentclass[handout]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage[T2A]{fontenc}
+\usepackage[english]{babel}
+\usepackage{graphicx}
+\usepackage{array}
+\usetheme{Warsaw}
+\usecolortheme{wolverine}
+
+\usepackage{fontawesome5}
+\usepackage{listings}
+\usepackage[all]{xy}
+\usepackage{changepage}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstdefinelanguage{Haskell}%
+  {otherkeywords={},%
+   morekeywords={as,abstype,if,then,else,case,class,data,default,deriving,%
+      hiding,if,in,infix,infixl,infixr,import,instance,let,module,%
+      newtype,of,qualified,type,where,do,AbsoluteSeek,AppendMode,%
+      Array,BlockBuffering,BufferMode,Char,Complex,Double,%
+      FilePath,Float,Word,Natural,IO,IOError,Ix,LineBuffering,Maybe,%
+      Ordering,NoBuffering,ReadMode,ReadWriteMode,ReadS,RelativeSeek,%
+      SeekFromEnd,SeekMode,ShowS,StdGen,String,Void,Bounded,Eq,%
+      Eval,ExitCode,exitFailure,exitSuccess,Floating,Fractional,%
+      Functor,Handle,HandlePosn,IOMode,Integral,List,Monad,MonadPlus,%
+      MonadZero,Num,Numeric,Ord,Random,RandomGen,Ratio,Rational,Read,%
+      Real,RealFloat,RealFrac,System,Prelude,EQ,GT,Just,%
+      LT,Nothing,WriteMode,abs,accum,accumArray,%
+      accumulate,acos,acosh,all,and,any,ap,appendFile,applyM,%
+      approxRational,asTypeOf,asin,asinh,assocs,atan,atan2,atanh,%
+      bounds,bracket,bracket_,break,catch,catMaybes,ceiling,chr,cis,%
+      compare,concat,concatMap,conjugate,const,cos,cosh,curry,cycle,%
+      decodeFloat,delete,deleteBy,deleteFirstsBy,denominator,%
+      digitToInt,divMod,drop,dropWhile,either,elem,elems,elemIndex,%
+      elemIndices,encodeFloat,error,exitFailure,exitWith,fail,%
+      filter,filterM,find,findIndex,findIndices,flip,floatDigits,%
+      floatRadix,floatRange,floatToDigits,floor,foldl,foldM,foldl1,%
+      foldr,foldr1,fromDouble,fromInt,fromInteger,%
+      toInteger,fromJust,fromMaybe,fromRat,fromRational,%
+      fromRealFrac,fst,gcd,genericLength,genericTake,genericDrop,%
+      genericSplitAt,genericIndex,genericReplicate,getArgs,getChar,%
+      getContents,getEnv,getLine,getProgName,getStdGen,getStdRandom,%
+      group,groupBy,guard,hClose,hFileSize,hFlush,hGetBuffering,%
+      hGetChar,hGetContents,hGetLine,hGetPosn,hIsClosed,hIsEOF,hIsOpen,%
+      hIsReadable,hIsSeekable,hIsWritable,hLookAhead,hPutChar,hPutStr,%
+      hPutStrLn,hPrint,hReady,hSeek,hSetBuffering,hSetPosn,head,%
+      hugsIsEOF,hugsHIsEOF,hugsIsSearchErr,hugsIsNameErr,%
+      hugsIsWriteErr,id,ioError,imagPart,indices,init,inits,%
+      inRange,insert,insertBy,interact,intersect,intersectBy,%
+      intersperse,intToDigit,ioeGetErrorString,ioeGetFileName,%
+      ioeGetHandle,isAlreadyExistsError,isAlreadyInUseError,isAlpha,%
+      isAlphaNum,isAscii,isControl,isDenormalized,isDoesNotExistError,%
+      isDigit,isEOF,isEOFError,isFullError,isHexDigit,isIEEE,%
+      isIllegalOperation,isInfinite,isJust,isLower,isNaN,%
+      isNegativeZero,isNothing,isOctDigit,isPermissionError,isPrefixOf,%
+      isPrint,isSpace,isSuffixOf,isUpper,isUserError,ixmap,%
+      join,last,lcm,lex,lexDigits,lexLitChar,liftM,liftM2,%
+      liftM3,liftM4,liftM5,lines,listArray,listToMaybe,log,logBase,%
+      lookup,magnitude,makePolar,mapAccumL,mapAccumR,mapAndUnzipM,%
+      mapM,mapM_,mapMaybe,max,maxBound,maximum,maximumBy,maybe,%
+      maybeToList,min,minBound,minimum,minimumBy,mkPolar,mkStdGen,%
+      mplus,mod,msum,mzero,negate,next,newStdGen,notElem,nub,nubBy,%
+      null,numerator,odd,openFile,or,ord,otherwise,partition,phase,pi,%
+      polar,print,product,properFraction,putChar,putStr,putStrLn,%
+      quot,random,randomIO,randomR,randomRIO,randomRs,randoms,%
+      rangeSize,readDec,readFile,readFloat,readHex,readInt,readIO,%
+      readList,readLitChar,readLn,readParen,readOct,readSigned,reads,%
+      readsPrec,realPart,realToFrac,recip,rem,repeat,replicate,return,%
+      reverse,round,scaleFloat,scanl,scanl1,scanr,scanr1,seq,sequence,%
+      sequence_,setStdGen,show,showChar,showEFloat,showFFloat,%
+      showFloat,showGFloat,showInt,showList,showLitChar,showParen,%
+      showSigned,showString,shows,showsPrec,significand,signum,sin,%
+      sinh,snd,sort,sortBy,span,split,splitAt,sqrt,stderr,stdin,stdout,%
+      strict,subtract,sum,system,tail,tails,take,tan,%
+      tanh,toInt,toInteger,toLower,toRational,toUpper,transpose,%
+      truncate,try,uncurry,undefined,unfoldr,union,unionBy,unless,%
+      unlines,until,unwords,unzip,unzip3,unzip4,unzip5,unzip6,unzip7,%
+      userError,when,words,writeFile,zero,zip,zip3,zip4,zip5,zip6,zip7,%
+      zipWith,zipWithM,zipWithM_,zipWith3,zipWith4,zipWith5,zipWith6,%
+      zipWith7},%
+   sensitive,%
+   morecomment=[l]--,%
+   morecomment=[n]{\{-}{-\}},%
+   morestring=[b]"%
+  }[keywords,comments,strings]%
+
+\lstset{
+  language=Haskell,
+  showstringspaces=false,
+  columns=flexible,
+  keepspaces=true,
+  basicstyle={\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  escapeinside={<@}{@>},
+  literate={μ}{{$\mu$}}1 {α}{{$\alpha$}}1 {->}{{$\to$}}2 {=>}{{$\Rightarrow$}}2 {<-}{{$\leftarrow$}}2 {≤}{{$\leqslant$}}1 {≥}{{$\geqslant$}}1 {∷}{{$::$}}1
+}
+
+\def\dd{\,.\,.\,}
+
+\definecolor{darkblue}{rgb}{0,0,0.8}
+\definecolor{darkgreen}{rgb}{0,0.6,0}
+\definecolor{darkred}{rgb}{1,0,0}
+
+\def\pros{\textcolor{darkgreen}{\bf Pros:} }
+\def\cons{\textcolor{darkred}{\bf Cons:} }
+
+\title{Bit vectors without compromises}
+\author[Andrew Lelechenko]{Andrew Lelechenko \\ \texttt{1@dxdy.ru}}
+\institute[Barclays]{Barclays, London}
+\date{Haskell Love, 31.07.2020}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\title{Shortest talk ever}
+
+\begin{frame}{Bit vectors}
+
+Bit vector is an array of booleans.
+
+It can be represented as unboxed {\tt Vector Bool}.
+
+\pause
+
+\bigskip\bigskip\bigskip
+\bigskip\bigskip\bigskip
+
+\centerline{\Huge\bf Thank you!}
+
+% \bigskip\bigskip\bigskip
+
+% \centerline{\Huge $\mathcal{THE~~END}$}
+
+\end{frame}
+
+\title{Bit vectors without compromises}
+
+\begin{frame}{Bit vectors as {\tt Vector Bool} from {\tt vector}}
+
+\pros
+
+\begin{itemize}
+\item Allocates a continuous memory segment.
+\item Random access is $O(1)$.
+\item Has a mutable counterpart, so updates are $O(1)$.
+\item Slicing is $O(1)$.
+\item Loop fusion framework and rich API.
+\end{itemize}
+
+\pause
+
+\cons
+
+\begin{itemize}
+\item Stores only 1 value per byte. \par
+      So requires $8\times$ more space than theoretically possible.
+\item Processes arrays bit by bit. \par
+      So {\tt map} and {\tt zip} are $64\times$ slower than possible.
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}{Bit vectors as {\tt Array Bool} from {\tt array}}
+
+\pros
+
+\begin{itemize}
+\item Allocates a continuous memory segment.
+\item Random access is $O(1)$.
+\item Has a mutable counterpart, so updates are $O(1)$.
+\item Stores 64 values per {\tt Word64}. \par ~
+\end{itemize}
+
+\pause
+
+\cons
+
+\begin{itemize}
+\item Processes arrays bit by bit. \par
+      So {\tt map} and {\tt zip} are 64x slower than possible.
+\item Slicing is $O(n)$.
+\item No loop fusion framework and very limited API.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Bit vectors as {\tt IntSet} from {\tt containers}}
+
+\pros
+
+\begin{itemize}
+\item The best representation for sparse bit vectors.
+\item Could store more than 8 values per {\tt Word64}.
+\item Set operations are capable to process 64 elements at once.
+\item Rich API.
+\end{itemize}
+
+\pause
+
+\cons
+
+\begin{itemize}
+\item Employs a lot of pointers, not quite cache-friendly.
+\item Random access is $O(\log n)$.
+\item No mutable counterpart, so updates are $O(\log n)$. \par ~
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Bit vectors as {\tt Integer} from {\tt bv}}
+
+\pros
+
+\begin{itemize}
+\item Allocates a continuous memory segment.
+\item Random access is $O(1)$.
+\item Stores 64 values per {\tt Word64}.
+\item Some operations are capable process 64 elements at once.
+\end{itemize}
+
+\pause
+
+\cons
+
+\begin{itemize}
+\item No mutable counterpart, so updates are \textcolor{darkred}{$O(n)$.}
+      \par ~ \par ~ \par ~
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}[fragile]{No compromises}
+
+\begin{itemize}[<+->]
+\item Full-fledged {\tt Vector} and {\tt MVector} instances \par
+      with expected asymptotic complexity.
+\item Handy {\tt Bits} instance with vectorised blockwise operations.
+\item As compact as possible: store 64 bits per {\tt Word64}.
+\item Allocate a continuous memory segment.
+\end{itemize}
+
+\pause
+
+\begin{lstlisting}[language=Haskell]
+newtype Bit = Bit { unBit ∷ Bool }
+data BitVec = BitVec
+  { offset ∷ Int, -- in bits
+  , length ∷ Int, -- in bits
+  , array  ∷ ByteArray
+  }
+\end{lstlisting}
+
+\pause
+
+\begin{lstlisting}[language=Haskell]
+index ∷ BitVec -> Int -> Bit
+index (BitVec offset _ array) i =
+  Bit (testBit (indexByteArray array q) r)
+  where (q, r) = (i + offset) `quotRem` 64
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{Writing a mutable bit vector}
+
+\begin{lstlisting}[language=Haskell]
+data MBitVec s = MBitVec
+  { offset ∷ Int, -- in bits
+  , length ∷ Int, -- in bits
+  , array  ∷ MutableByteArray s
+  }
+\end{lstlisting}
+
+\pause
+
+\begin{lstlisting}[language=Haskell]
+write ∷ MBitVec s -> Int -> Bit -> ST s ()
+write (MBitVec offset _ array) i (Bit b) = do
+  let (q, r) = (i + offset) `quotRem` 64
+  old <- readByteArray array q
+  let new = (if b then setBit else clearBit) old r
+  writeByteArray array q new
+\end{lstlisting}
+
+\pause
+
+\bigskip
+
+\centerline{\bf What could go wrong in a concurrent environment?}
+
+\end{frame}
+
+\begin{frame}[fragile]{Thread-safe writes}
+
+Imagine having an atomic compare-and-swap (CAS):
+
+\begin{lstlisting}[language=Haskell]
+casArray ∷ MutableArray s a -> Int -> a -> a -> ST s a
+casArray array offset expected new = do
+  actual <- readByteArray array offset
+  when (actual == expected) $
+    writeByteArray array offset new
+  pure actual
+\end{lstlisting}
+
+\pause
+
+\begin{lstlisting}[language=Haskell]
+write (MBitVec offset _ array) i (Bit b) =
+  readByteArray array q >>= go
+  where
+    (q, r) = (i + offset) `quotRem` 64
+    go expected = do
+      let new = (if b then setBit else clearBit) expected r
+      actual <- casArray array q expected new
+      when (actual /= expected) (go actual)
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{Better thread-safe writes}
+
+{\tt GHC.Exts} provides functions equivalent to
+
+\begin{lstlisting}[language=Haskell]
+fetchAndIntArray, fetchOrIntArray, fetchXorIntArray
+  ∷ MutableByteArray s -> Int -> Int -> ST s Int
+fetchAndIntArray array offset mask = ...
+\end{lstlisting}
+
+\pause
+
+\begin{lstlisting}[language=Haskell]
+write ∷ MBitVec s -> Int -> Bit -> ST s ()
+write (MBitVec offset _ array) i (Bit b) = if b
+  then fetchOrIntArray  array q             (bit r)
+  else fetchAndIntArray array q (complement (bit r))
+  where (q, r) = (i + offset) `quotRem` 64
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{Modifying a mutable bit vector}
+
+\begin{lstlisting}[language=Haskell]
+modify ∷ MVector s a -> (a -> a) -> Int -> ST s ()
+modify vec func offset = ...
+\end{lstlisting}
+
+\pause
+
+\begin{lstlisting}[language=Haskell]
+modify ∷ MVector s Bit -> (Bit -> Bit) -> Int -> ST s ()
+\end{lstlisting}
+
+\pause
+
+\bigskip
+
+There are only 4 functions {\tt Bit}${}\to{}${\tt Bit}:
+\begin{itemize}[<+->]
+\item {\tt id},
+\item {\tt const True},
+\item {\tt const False},
+\item \textcolor{darkred}{\tt not}.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]{Flipping a bit}
+
+\begin{lstlisting}[language=Haskell]
+flipBit ∷ MVector s Bit -> Int -> ST s ()
+flipBit vec i = do
+  Bit b <- read vec i
+  write vec i (not b)
+\end{lstlisting}
+
+\pause
+
+\centerline{\bf What could go wrong in a concurrent environment?}
+
+\pause
+
+\bigskip
+\bigskip
+
+\begin{lstlisting}[language=Haskell]
+flipBit ∷ MVector s Bit -> Int -> ST s ()
+flipBit (MBitVec offset _ array) i =
+  fetchXorIntArray array q (bit r)
+  where (q, r) = (i + offset) `quotRem` 64
+\end{lstlisting}
+
+\pause
+
+\medskip
+
+Killing two birds with one stone:
+
+\begin{itemize}[<+->]
+\item Faster!
+\item Thread-safe!
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Test your unboxed vectors}
+
+\begin{itemize}[<+->]
+\item {\tt MVector} interface requires also defining
+      {\tt copy}, {\tt move}, {\tt set}, {\tt grow},
+      all dealing correctly with (possibly, unaligned) offsets and lengths.
+\item Covering all cases with unit tests is unfeasible.
+\item {\tt bitvec-0.1} was notoriously buggy.
+\item {\tt Test.QuickCheck.Classes.muvectorLaws} provides $\sim30$~properties
+      for thorough testing of unboxed mutable vectors.
+\item Also available from {\tt Hedgehog.Classes.muvectorLaws}.
+\item These properties have proved to be useful in test suites
+      of {\tt bitvec}, {\tt arithmoi}, {\tt mod}\dots
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]{Blockwise {\tt map}}
+
+\begin{lstlisting}[language=Haskell]
+map ∷ (a   -> a)   -> Vector a   -> Vector a
+map ∷ (Bit -> Bit) -> Vector Bit -> Vector Bit
+\end{lstlisting}
+
+\pause
+\bigskip
+
+There are only 4 functions {\tt Bit}${}\to{}${\tt Bit}:
+\begin{itemize}
+\item {\tt id},
+\item {\tt const True},
+\item {\tt const False},
+\item \textcolor{darkred}{\tt not}.
+\end{itemize}
+
+\pause
+
+\begin{lstlisting}[language=Haskell]
+invertBits ∷ Vector Bit -> Vector Bit
+\end{lstlisting}
+
+\pause
+
+\begin{itemize}[<+->]
+\item Invert 64 bits at once, applying {\tt complement} to {\tt Word64}.
+\item Take extra care for unaligned vectors in concurrent environment.
+\item Use {\tt mpn\_com} from GMP for ultra-fast vectorised processing, \par
+      up to $1000\times$ faster than {\tt Vector Bool}.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]{Blockwise {\tt zip}}
+
+\begin{lstlisting}[language=Haskell]
+zip ∷ (a -> a -> a) -> Vector a -> Vector a -> Vector a
+zip ∷ (Bit -> Bit -> Bit)
+    -> Vector Bit -> Vector Bit -> Vector Bit
+\end{lstlisting}
+
+\pause
+
+\bigskip
+
+There are only 16 functions {\tt Bit}${}\to{}${\tt Bit}${}\to{}${\tt Bit}:
+
+\begin{itemize}[<+->]
+\item {\tt True}, {\tt False}, $x$, $\bar x$, $y$, $\bar y$,
+\item $ x \wedge y $, $\bar x \wedge y$, $x \wedge \bar y$, $\bar x \wedge \bar y$,
+\item $ x \vee y $, $\bar x \vee y$, $x \vee \bar y$, $\bar x \vee \bar y$,
+\item $ x + y $, $\bar x + y$, \textcolor{red}{$x + \bar y$, $\bar x + \bar y$.}
+\end{itemize}
+
+\bigskip
+
+\begin{itemize}[<+->]
+\item Zip 64 bits at once, applying {\tt complement},
+      {\tt .\&.}, {\tt .|.} and {\tt xor} on {\tt Word64}.
+\item Aligning two vectors with different offsets is tough by itself,
+      and becomes even worse in concurrent environment.
+\item Use rountines from GMP for ultra-fast vectorised processing, \par
+      up to $1000\times$ faster than {\tt Vector Bool}.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Additional goodness in {\tt bitvec}}
+
+\begin{itemize}[<+->]
+\item Blockwise population count and its reverse {\tt nthBitIndex}. \par ~
+\item Operations for succinct data structures, backed by BMI2 instructions. \par ~
+\item Ultra-fast reversal, up to $O(1)$. \par ~
+\item Boolean polynomials for cryptographic applications. \par ~
+\item Conversions from/to {\tt Vector Word} and {\tt ByteString}.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Bit vectors without compromises}
+
+\begin{itemize}[<+->]
+\item Full-fledged {\tt Vector} and {\tt MVector} instances \par
+      with expected asymptotic complexity \par
+      (but constant factor is up to 20\% larger).
+\item Handy {\tt Bits} instance with vectorised blockwise operations \par
+      (usually $64\times$ and up to $1000\times$ faster).
+\item Allocate $8\times$ less memory than {\tt Vector Bool}.
+\end{itemize}
+
+\bigskip
+\bigskip
+\bigskip
+
+\pause
+
+\centerline{\Huge\bf Thank you!}
+
+\bigskip
+\bigskip
+
+\centerline{
+\faAt\ 1@dxdy.ru ~~ \par \faTelegram\ Bodigrim ~~~\,
+}
+
+\medskip
+
+\centerline{
+\par \faGithub\ github.com/Bodigrim/bitvec ~~
+\par \faGithub\ github.com/Bodigrim/my-talks
+}
+
+\end{frame}
+
+\end{document}

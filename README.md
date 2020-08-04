@@ -1,5 +1,8 @@
 # My talks
 
+* __Bit vectors without compromises__, Haskell Love, 31.07.2020:
+  [slides](https://github.com/Bodigrim/my-talks/raw/master/haskelllove2020/slides.pdf).
+
 * __Enum instances on steroids__, Berlin Functional Programming Group, 21.07.2020:
   [slides](https://github.com/Bodigrim/my-talks/raw/master/berlinfpg2020/slides.pdf), [video](https://youtu.be/wjJy3HS2Ygs).
 
