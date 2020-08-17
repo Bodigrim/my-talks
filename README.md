@@ -1,7 +1,7 @@
 # My talks
 
 * __Bit vectors without compromises__, Haskell Love, 31.07.2020:
-  [slides](https://github.com/Bodigrim/my-talks/raw/master/haskelllove2020/slides.pdf).
+  [slides](https://github.com/Bodigrim/my-talks/raw/master/haskelllove2020/slides.pdf), [video](https://youtu.be/HhpH8DKFBls).
 
 * __Enum instances on steroids__, Berlin Functional Programming Group, 21.07.2020:
   [slides](https://github.com/Bodigrim/my-talks/raw/master/berlinfpg2020/slides.pdf), [video](https://youtu.be/wjJy3HS2Ygs).
@@ -10,7 +10,7 @@
   [slides](https://github.com/Bodigrim/my-talks/raw/master/londonhaskell2020/slides.pdf).
 
 * __Haskell for mathematical libraries__, Lambda Days 2020, Kraków, 13.02.2020:
-  [slides](https://github.com/Bodigrim/my-talks/raw/master/lambdadays2020/slides.pdf).
+  [slides](https://github.com/Bodigrim/my-talks/raw/master/lambdadays2020/slides.pdf), [video](https://youtu.be/qaPdg0mZavM).
 
 * __Backtracking, interleaving, and terminating monad transformers__, Papers We Love, London, 29.10.2019:
   [slides](https://github.com/Bodigrim/my-talks/raw/master/paperswelove2019/slides.pdf),
