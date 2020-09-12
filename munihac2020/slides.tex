@@ -1,0 +1,547 @@
+\documentclass[handout]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage[T2A]{fontenc}
+\usepackage[english]{babel}
+\usepackage{graphicx}
+\usepackage{array}
+\usetheme{Warsaw}
+\usecolortheme{wolverine}
+
+\usepackage{fontawesome5}
+\usepackage{listings}
+\usepackage[all]{xy}
+\usepackage{changepage}
+\usepackage{dirtree}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstdefinelanguage{Haskell}%
+  {otherkeywords={},%
+   morekeywords={as,case,class,data,default,deriving,do,else,family,forall,foreign,hiding,if,import,in,infix,infixl,infixr,instance,let,mdo,module,newtype,of,proc,qualified,rec,then,type,where},%
+   sensitive,%
+   morecomment=[l]--,%
+   morecomment=[n]{\{-}{-\}},%
+   morestring=[b]"%
+  }[keywords,comments,strings]%
+
+\lstset{
+  language=Haskell,
+  showstringspaces=false,
+  columns=flexible,
+  keepspaces=true,
+  basicstyle={\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  escapeinside={<@}{@>},
+  literate={μ}{{$\mu$}}1 {α}{{$\alpha$}}1 {->}{{$\to$}}2 {=>}{{$\Rightarrow$}}2 {<-}{{$\leftarrow$}}2 {≤}{{$\leqslant$}}1 {<=}{{$\leqslant$}}1 {≥}{{$\geqslant$}}1 {>=}{{$\geqslant$}}1 {∷}{{$::$}}1 {::}{{$::$}}1 {...}{{\dots}}1
+}
+
+\def\dd{\,.\,.\,}
+\def\ge{\geqslant}
+\def\le{\leqslant}
+
+\DeclareMathOperator{\quotRem}{quotRem}
+
+\definecolor{darkblue}{rgb}{0,0,0.8}
+\definecolor{darkgreen}{rgb}{0,0.6,0}
+\definecolor{darkred}{rgb}{1,0,0}
+
+\def\pros{\textcolor{darkgreen}{\bf Pros:} }
+\def\cons{\textcolor{darkred}{\bf Cons:} }
+
+\title{Polynomials in Haskell}
+\author[Andrew Lelechenko]{Andrew Lelechenko \\ \texttt{1@dxdy.ru}}
+\institute[Barclays]{Barclays, London}
+\date{MuniHac, 12.09.2020}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}{Univariate polynomials}
+\begin{definition}
+A polynomial is
+\begin{itemize}
+\item either a monomial $c\cdot x^k$ for $k \ge 0$,
+\item or a sum of two polynomials.
+\end{itemize}
+\end{definition}
+
+\pause
+
+\begin{itemize}[<+->]
+\item $2x^3$, $x^2$, $4$ are polynomials.
+\item $1/x$ is not a polynomial.
+\item $4+2x^3$ and $x+x^2$ are polynomials as well.
+\item Polynomials can be added and multiplied.
+
+\vspace{-1em}
+
+\begin{align*}
+(x + 1) + (x - 1) &= 2 x, \\
+(x + 1) \times (x - 1) &= x^2 - 1.
+\end{align*}
+
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Why Haskell?}
+\begin{itemize}[<+->]
+\item
+\textcolor{darkred}{\bf Question:} \par
+There are efficient Fortran libraries
+for polynomial manipulations. Can we use them?
+\item
+\textcolor{darkgreen}{\bf Answer:} \par
+Not really, Fortran libraries are mostly
+tied to {\tt Double}.
+\item My main applications are algebra and
+cryptography, where coefficients are discrete
+(think of {\tt Integer} and modular arithmetic).
+\item We would like our implementation of polynomials
+to be polymorphic in coefficients.
+\item Haskell has a good track record for polymorphism,
+but a modest one for performance.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Haskell translation}
+
+\begin{lstlisting}[language=Haskell]
+data Poly a
+  = X { power :: Word, coeff :: a }
+  | Poly a :+ Poly a
+  deriving (Eq)
+\end{lstlisting}
+
+\pause
+
+\begin{lstlisting}[language=Haskell]
+instance Num a => Num (Poly a) where
+  fromInteger n = X 0 (fromInteger n)
+  (+) = (:+)
+
+  (x :+ y) * z = (x * z) :+ (y * z)
+  x * (y :+ z) = (x * y) :+ (x * z)
+  X k c * X l d = X (k + l) (c * d)
+\end{lstlisting}
+
+\medskip
+
+\centerline{\bf Beautiful, innit?}
+
+\bigskip
+
+\pause
+
+However polynomial addition, as defined, is not associative:
+$$ x + (y + z) \ne (x + y) + z. $$
+
+\end{frame}
+
+\begin{frame}[fragile]{Fixing associativity}
+
+\begin{itemize}[<+->]
+\item There are some basic blocks (monomials).
+\item There is an associative operation (addition) \par
+      with a neutral element (monomial with zero coefficient).
+\item Thus, polynomials are monoids over monomials.
+\item Lists are {\bf free} monoids,
+      let's use them to  model a non-free one.
+\end{itemize}
+
+\pause
+
+\begin{lstlisting}[language=Haskell]
+data Mono a = X { power :: Word, coeff :: a }
+  deriving (Eq, Ord)
+mul :: Num a => Mono a -> Mono a -> Mono a
+mul (X k c) (X l d) = X (k + l) (c * d)
+\end{lstlisting}
+
+\pause
+
+\begin{lstlisting}[language=Haskell]
+newtype Poly a = Poly [Mono a] deriving (Eq)
+instance Num a => Num (Poly a) where
+  Poly xs + Poly ys = Poly (xs <> ys)
+  Poly xs * Poly ys = foldl (+) (Poly [])
+    (map (\x -> Poly (map (mul x) ys)) xs)
+\end{lstlisting}
+
+\medskip
+
+\centerline{\bf Better?}
+\end{frame}
+
+\begin{frame}[fragile]{Fixing commutativity}
+
+Not quite: polynomial addition, as defined, is not commutative:
+$$ x + y \ne y + x. $$
+
+\pause
+
+Commutativity means that all rearrangements of {\tt [Mono a]} must be equivalent.
+
+\begin{lstlisting}[language=Haskell]
+data Mono a = X { power :: Word, coeff :: a }
+  deriving (Eq, Ord)
+
+newtype Poly a = Poly [Mono a]
+instance Ord a => Eq (Poly a) where
+  (==) = (==) `on` sort
+\end{lstlisting}
+
+\pause
+
+{\bf No!}
+Structural equality is too important to be sacrificed.
+\end{frame}
+
+\begin{frame}[fragile]{Sorted lists}
+
+\begin{lstlisting}[language=Haskell]
+newtype Sorted a = Sorted { unSorted :: [a] }
+
+sorted :: [a] -> Sorted a
+sorted = Sorted . sort
+
+merge :: Ord a => [a] -> [a] -> [a]
+merge xs [] = xs
+merge [] ys = ys
+merge (x : xs) (y : ys)
+  | x <= y    = x : merge xs (y : ys)
+  | otherwise = y : merge (x : xs) ys
+\end{lstlisting}
+
+
+\medskip
+
+\centerline{\bf All sorted?}
+
+\bigskip
+
+\pause
+
+Not yet: we would also expect that $x+x = 2x$ and $0x = 0$.
+
+\end{frame}
+
+\begin{frame}[fragile]{Final touches}
+
+\begin{lstlisting}[language=Haskell]
+merge :: (Eq a, Num a) => [Mono a] -> [Mono a] -> [Mono a]
+merge xs [] = xs
+merge [] ys = ys
+merge (X k c : xs) (X l d : ys) = case k `compare` l of
+  LT -> X k c : merge xs (X l d : ys)
+  EQ -> case c + d of
+    0 -> merge xs ys
+    e -> X k e : merge xs ys
+  GT -> Y l d : merge (X k c : xs) (ys)
+\end{lstlisting}
+
+\pause
+
+\begin{lstlisting}[language=Haskell]
+newtype Poly a = Poly [Mono a] deriving (Eq)
+instance (Eq a, Num a) => Num (Poly a) where
+  Poly xs + Poly ys = Poly (xs `merge` ys)
+  Poly xs * Poly ys = foldl (+) (Poly [])
+    (map (\x -> Poly (map (mul x) ys)) xs)
+\end{lstlisting}
+
+\medskip
+
+\centerline{\bf Structural equality is restored!}
+
+\end{frame}
+
+\begin{frame}[fragile]{Memory representation}
+
+\begin{itemize}[<+->]
+\item {\tt Mono a} takes 5+ words: tag, pointer to a power and
+      its value, pointer to a coefficient and its value.
+\item {\tt [Mono a]} takes 8+ words per monomial.
+\item If {\tt a} is {\tt Double} or {\tt Int},
+      this is very expensive.
+\item Lazy lists accumulate long sequence of thunks,
+      especially in multiplication.
+\item \textcolor{darkgreen}{\bf Solution:}
+      use vectors!
+\item Shall we use boxed or unboxed vectors?
+\item \textcolor{darkgreen}{\bf Solution:}
+      be polymorphic by vector flavour.
+\end{itemize}
+
+\pause
+
+\begin{lstlisting}[language=Haskell]
+newtype Poly v a = Poly (v (Word, a)) deriving (Eq)
+instance (Eq a, Num a, Vector v (Word, a)) => Num (Poly v a)
+\end{lstlisting}
+
+\medskip
+
+\centerline{\bf Vectors make polynomial arithmetic $20\times$ faster!}
+
+\end{frame}
+
+\begin{frame}{Dense polynomials}
+
+\begin{itemize}[<+->]
+
+\item We arrived to {\tt Poly a} $\sim$ {\tt [Mono a]}
+      by choosing a sorted list
+      as a canonical representative of a class
+      of equivalent polynomials.
+\item Another choice of canonical representative
+      is a polynomial of the same degree, but
+      with monomials for all powers present.
+\item It's enough to store coefficients alone:
+      {\tt Poly a} $\sim$ {\tt [a]}.
+\item This representation allows to implement
+      asymptotically-superior algorithms:
+      \begin{itemize}
+      \item Karatsuba multiplication $O(n^{1.585})$,
+      \item fast Fourier transform $O(n\log n)$.
+      \end{itemize}
+\end{itemize}
+
+\pause
+
+\begin{table}
+\begin{tabular}{rrrr}
+length & {\tt polynomial}, $\mu s$ & {\tt poly}, $\mu s$ & speedup
+\\\hline
+100 & 1733 & 33 & $52\times$
+\\
+1000 & 442000 & 1456 & $303\times$
+\end{tabular}
+\end{table}
+
+\end{frame}
+
+\begin{frame}[fragile]{User interface targeting REPL}
+
+\begin{itemize}[<+->]
+\item We need a nice way to input and output polynomials.
+\item What about {\tt deriving (Show, Read)}?
+\item Derived {\tt Show} looks nowhere close to
+      a mathematical expression.
+
+\begin{lstlisting}[language=Haskell]
+Poly {unPoly = [(0,2),(1,-3),(2,1)]}
+\end{lstlisting}
+
+\item What about a hand-written {\tt Show}?
+\begin{lstlisting}[language=Haskell]
+> :set -XOverloadedLists
+> [(2,1), (1,-3), (0,2)] :: VPoly Int
+1 * X^2 + (-3) * X + 2
+\end{lstlisting}
+\item But writing correspondent {\tt Read} would be abysmal!
+\item There is no point to support
+\begin{lstlisting}[language=Haskell]
+read "X^2 - 3 * X + 2"
+\end{lstlisting}
+if one can define {\tt X} as a pattern and write immediately
+\begin{lstlisting}[language=Haskell]
+X^2 - 3 * X + 2 :: Poly Int
+\end{lstlisting}
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]{Division with remainder}
+
+\begin{itemize}[<+->]
+\item We defined addition and multiplication, and
+      subtraction poses no problem. What about division?
+\begin{align*}
+\quotRem~x^2~x &= (x, 0), \\
+\quotRem~(x^2+1)~x &= (x, 1), \\
+\quotRem~(x^2+1)~(x+1) &= (x-1, 2).
+\end{align*}
+
+\item Things get difficult for integral coefficients:
+\begin{align*}
+\quotRem~x~2.0 &= (0.5x, 0), \\
+\quotRem~x~2\phantom{.0} &={} ?
+\end{align*}
+
+\end{itemize}
+
+\pause
+
+\begin{lstlisting}[language=Haskell]
+quotRemPoly
+  :: Fractional a
+  => Poly a -> Poly a -> (Poly a, Poly a)
+quotRemPoly = <long division algorithm>
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{Greatest common divisor}
+
+\begin{itemize}[<+->]
+\item Usually $\gcd$ is computed using Euclid's algorithm,
+      which involves repeated $\quotRem$:
+      $$ \gcd(70, 25) = \gcd(25, 20) = \gcd(20, 5) = 5. $$
+\item Is it possible to implement $\gcd$ without access to
+      $\quotRem$? E.~g., $\gcd(2x^2-2, 5x+5) = x+1$.
+\item It appears that having access to $\gcd$ on coefficients
+      is enough to implement $\gcd$ for polynomials.
+\item Multiply, not divide!
+
+\begin{align*}
+\gcd(2x^2-2, 5x+5) & \sim \gcd(10x^2-10, 10x+10) \sim \\
+& \sim \gcd(10x^2-10 - x(10x+10), 10x+10) \sim \\
+& \sim \gcd(-10x - 10, 10x+10)
+\sim 10x+10.
+\end{align*}
+
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]{What's wrong with {\tt Integral}?}
+
+\begin{lstlisting}[language=Haskell]
+class (Real a, Enum a) => Integral a where
+  quotRem :: a -> a -> (a, a)
+  toInteger :: a -> Integer
+  ...
+gcd :: Integral a => a -> a -> a
+\end{lstlisting}
+
+\pause
+
+\begin{itemize}[<+->]
+\item Restrictive superclasses,
+      which has nothing to do with {\tt quotRem}.
+\item Obnoxious {\tt toInteger}, which coupled
+      with {\tt Num.fromInteger} means
+      that only subrings of {\tt Integer}
+      can be {\tt Integral}.
+\item Function {\tt gcd} is constrained to domains,
+      allowing division with reminder, which is
+      too restrictive for polynomials.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]{{\tt Integral} done right}
+
+\begin{lstlisting}[language=Haskell]
+class Num a => GcdDomain a where
+  gcd :: a -> a -> a
+  default gcd :: (Eq a, Euclidean a) => a -> a -> a
+
+class GcdDomain a => Euclidean a where
+  quotRem :: a -> a -> (a, a)
+\end{lstlisting}
+
+\pause
+
+\begin{lstlisting}[language=Haskell]
+instance GcdDomain a => GcdDomain (Poly a) where
+  ...
+instance Fractional a => Euclidean (Poly a) where
+  ...
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{Project structure}
+
+\begin{columns}[onlytextwidth,T]
+  \begin{column}{.4\linewidth}
+  \vspace{4em}
+
+  \begin{itemize}
+  \item All actual code is in {\tt Internal} subtree.
+  \item Public, user-facing modules
+        are just dummies with re-exports.
+  \item This approach helps a lot with circular dependencies
+        between modules.
+  \end{itemize}
+  \end{column}
+  \begin{column}{.1\linewidth}
+  ~
+  \end{column}
+  \begin{column}{.5\linewidth}
+
+\vspace{-1.3em}
+
+\dirtree{%
+.1 Data.
+.2 Poly.
+.3 Internal.
+.4 Dense.
+.5 DFT.hs.
+.5 Field.hs.
+.5 GcdDomain.hs.
+.4 Dense.hs.
+.4 Sparse.
+.5 Field.hs.
+.5 GcdDomain.hs.
+.4 Sparse.hs.
+.3 Semiring.hs.
+.3 Sparse.
+.4 Multi.hs.
+.4 Semiring.hs.
+.3 Sparse.hs.
+.2 Poly.hs.
+}
+
+\end{column}
+\end{columns}
+
+\end{frame}
+
+\begin{frame}{Package {\tt poly}}
+
+\begin{itemize}[<+->]
+\item Polynomials,
+      polymorphic by coefficients and containers.
+\item Full-featured:
+      \begin{itemize}
+      \item Dense and sparse representations.
+      \item Laurent polynomials, allowing negative powers.
+      \item Type-safe polynomials over many variables.
+      \item Special polynomial sequences.
+      \end{itemize}
+\item GC- and cache-friendly implementation.
+\item Unrivaled performance amongst Haskell native packages.
+\item 1000+ tests, 98\% test coverage.
+\end{itemize}
+
+\bigskip
+\bigskip
+
+\pause
+
+\centerline{\Huge\bf Thank you!}
+
+\bigskip
+
+\begin{table}
+\begin{tabular}{rl}
+\faAt\ 1@dxdy.ru & \faTelegram\ Bodigrim \\
+\faGithub\ github.com/Bodigrim/poly & \faGithub\ github.com/Bodigrim/my-talks
+\end{tabular}
+\end{table}
+
+\end{frame}
+
+\end{document}

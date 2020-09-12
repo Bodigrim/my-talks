@@ -1,5 +1,8 @@
 # My talks
 
+* __Polynomials in Haskell__, MuniHac, 12.09.2020:
+  [slides](https://github.com/Bodigrim/my-talks/raw/master/munihac2020/slides.pdf).
+
 * __Bit vectors without compromises__, Haskell Love, 31.07.2020:
   [slides](https://github.com/Bodigrim/my-talks/raw/master/haskelllove2020/slides.pdf), [video](https://youtu.be/HhpH8DKFBls).
 
