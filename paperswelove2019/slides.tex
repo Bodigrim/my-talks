@@ -18,71 +18,7 @@
 
 \lstdefinelanguage{Haskell}%
   {otherkeywords={},%
-   morekeywords={as,abstype,if,then,else,case,class,data,default,deriving,%
-      hiding,if,in,infix,infixl,infixr,import,instance,let,module,%
-      newtype,of,qualified,type,where,do,AbsoluteSeek,AppendMode,%
-      Array,BlockBuffering,Bool,BufferMode,Char,Complex,Double,Either,%
-      FilePath,Float,Int,Word,Integer,Natural,IO,IOError,Ix,LineBuffering,Maybe,%
-      Ordering,NoBuffering,ReadMode,ReadWriteMode,ReadS,RelativeSeek,%
-      SeekFromEnd,SeekMode,ShowS,StdGen,String,Void,Bounded,Enum,Eq,%
-      Eval,ExitCode,exitFailure,exitSuccess,Floating,Fractional,%
-      Functor,Handle,HandlePosn,IOMode,Integral,List,Monad,MonadPlus,%
-      MonadZero,Num,Numeric,Ord,Random,RandomGen,Ratio,Rational,Read,%
-      Real,RealFloat,RealFrac,Show,System,Prelude,EQ,False,GT,Just,%
-      Left,LT,Nothing,Right,WriteMode,True,abs,accum,accumArray,%
-      accumulate,acos,acosh,all,and,any,ap,appendFile,applyM,%
-      approxRational,array,asTypeOf,asin,asinh,assocs,atan,atan2,atanh,%
-      bounds,bracket,bracket_,break,catch,catMaybes,ceiling,chr,cis,%
-      compare,concat,concatMap,conjugate,const,cos,cosh,curry,cycle,%
-      decodeFloat,delete,deleteBy,deleteFirstsBy,denominator,%
-      digitToInt,div,divMod,drop,dropWhile,either,elem,elems,elemIndex,%
-      elemIndices,encodeFloat,enumFrom,enumFromThen,enumFromThenTo,%
-      enumFromTo,error,even,exitFailure,exitWith,fail,%
-      filter,filterM,find,findIndex,findIndices,flip,floatDigits,%
-      floatRadix,floatRange,floatToDigits,floor,foldl,foldM,foldl1,%
-      foldr,foldr1,fromDouble,fromEnum,fromInt,fromInteger,%
-      toInteger,fromJust,fromMaybe,fromRat,fromRational,%
-      fromRealFrac,fst,gcd,genericLength,genericTake,genericDrop,%
-      genericSplitAt,genericIndex,genericReplicate,getArgs,getChar,%
-      getContents,getEnv,getLine,getProgName,getStdGen,getStdRandom,%
-      group,groupBy,guard,hClose,hFileSize,hFlush,hGetBuffering,%
-      hGetChar,hGetContents,hGetLine,hGetPosn,hIsClosed,hIsEOF,hIsOpen,%
-      hIsReadable,hIsSeekable,hIsWritable,hLookAhead,hPutChar,hPutStr,%
-      hPutStrLn,hPrint,hReady,hSeek,hSetBuffering,hSetPosn,head,%
-      hugsIsEOF,hugsHIsEOF,hugsIsSearchErr,hugsIsNameErr,%
-      hugsIsWriteErr,id,ioError,imagPart,indices,init,inits,%
-      inRange,insert,insertBy,interact,intersect,intersectBy,%
-      intersperse,intToDigit,ioeGetErrorString,ioeGetFileName,%
-      ioeGetHandle,isAlreadyExistsError,isAlreadyInUseError,isAlpha,%
-      isAlphaNum,isAscii,isControl,isDenormalized,isDoesNotExistError,%
-      isDigit,isEOF,isEOFError,isFullError,isHexDigit,isIEEE,%
-      isIllegalOperation,isInfinite,isJust,isLower,isNaN,%
-      isNegativeZero,isNothing,isOctDigit,isPermissionError,isPrefixOf,%
-      isPrint,isSpace,isSuffixOf,isUpper,isUserError,iterate,ixmap,%
-      join,last,lcm,length,lex,lexDigits,lexLitChar,liftM,liftM2,%
-      liftM3,liftM4,liftM5,lines,listArray,listToMaybe,log,logBase,%
-      lookup,magnitude,makePolar,map,mapAccumL,mapAccumR,mapAndUnzipM,%
-      mapM,mapM_,mapMaybe,max,maxBound,maximum,maximumBy,maybe,%
-      maybeToList,min,minBound,minimum,minimumBy,mkPolar,mkStdGen,%
-      mplus,mod,msum,mzero,negate,next,newStdGen,not,notElem,nub,nubBy,%
-      null,numerator,odd,openFile,or,ord,otherwise,partition,phase,pi,%
-      polar,pred,print,product,properFraction,putChar,putStr,putStrLn,%
-      quot,quotRem,random,randomIO,randomR,randomRIO,randomRs,randoms,%
-      rangeSize,read,readDec,readFile,readFloat,readHex,readInt,readIO,%
-      readList,readLitChar,readLn,readParen,readOct,readSigned,reads,%
-      readsPrec,realPart,realToFrac,recip,rem,repeat,replicate,return,%
-      reverse,round,scaleFloat,scanl,scanl1,scanr,scanr1,seq,sequence,%
-      sequence_,setStdGen,show,showChar,showEFloat,showFFloat,%
-      showFloat,showGFloat,showInt,showList,showLitChar,showParen,%
-      showSigned,showString,shows,showsPrec,significand,signum,sin,%
-      sinh,snd,sort,sortBy,span,split,splitAt,sqrt,stderr,stdin,stdout,%
-      strict,subtract,succ,sum,system,tail,tails,take,takeWhile,tan,%
-      tanh,toEnum,toInt,toInteger,toLower,toRational,toUpper,transpose,%
-      truncate,try,uncurry,undefined,unfoldr,union,unionBy,unless,%
-      unlines,until,unwords,unzip,unzip3,unzip4,unzip5,unzip6,unzip7,%
-      userError,when,words,writeFile,zero,zip,zip3,zip4,zip5,zip6,zip7,%
-      zipWith,zipWithM,zipWithM_,zipWith3,zipWith4,zipWith5,zipWith6,%
-      zipWith7},%
+   morekeywords={as,case,class,data,default,deriving,do,else,family,forall,foreign,hiding,if,import,in,infix,infixl,infixr,instance,let,mdo,module,newtype,of,proc,qualified,rec,then,type,where},%
    sensitive,%
    morecomment=[l]--,%
    morecomment=[n]{\{-}{-\}},%
@@ -99,10 +35,14 @@
   numberstyle=\tiny\color{gray},
   keywordstyle=\color{blue},
   commentstyle=\color{dkgreen},
-  stringstyle=\color{mauve}
+  stringstyle=\color{mauve},
+  escapeinside={<@}{@>},
+  literate={μ}{{$\mu$}}1 {α}{{$\alpha$}}1 {->}{{$\to$}}2 {=>}{{$\Rightarrow$}}2 {<-}{{$\leftarrow$}}2 {≤}{{$\leqslant$}}1 {<=}{{$\leqslant$}}1 {≥}{{$\geqslant$}}1 {>=}{{$\geqslant$}}1 {∷}{{$::$}}1 {::}{{$::$}}1 {...}{{\dots}}1
 }
 
 \def\N{\mathbb{N}}
+\def\ge{\geqslant}
+\def\le{\leqslant}
 
 \title[Backtracking, Interleaving, and Terminating Monad\ldots]{Backtracking, Interleaving, and Terminating Monad Transformers}
 \author[Andrew Lelechenko]{Andrew Lelechenko \\ \texttt{1@dxdy.ru}}
@@ -157,7 +97,7 @@
 
 \item Haskell:
 \begin{lstlisting}[language=Haskell]
-[ (x, y) | x <- [1..3], y <- [x..4], x + y <= 5 ]
+[ (x, y) | x <- [1..3], y <- [x..4], x + y ≤ 5 ]
 \end{lstlisting}
 
 \item Python:
@@ -165,7 +105,7 @@
 { (x, y)
   for x in range(1, 3)
   for y in range(x, 4)
-  if x + y <= 5 }
+  if x + y ≤ 5 }
 \end{lstlisting}
 
 \item PostgreSQL:
@@ -173,7 +113,7 @@
 SELECT x, y
 FROM GENERATE_SERIES(1, 3) AS x,
      GENERATE_SERIES(x, 4) AS y
-WHERE x + y <= 5;
+WHERE x + y ≤ 5;
 \end{lstlisting}
 
 \end{itemize}
@@ -218,7 +158,7 @@ $$ \{ x \mid x \in 2\N \cup 3\N, x \equiv 1 \!\!\! \pmod 2 \} = \{ 3, 9, 15\ldot
 
 Simple implementation:
 \begin{lstlisting}[language=Haskell]
-interleave :: [a] -> [a] -> [a]
+interleave ∷ [a] -> [a] -> [a]
 interleave [] ys = ys
 interleave xs [] = xs
 interleave (x:xs) (y:ys) = x : y : interleave xs ys
@@ -228,7 +168,7 @@ interleave (x:xs) (y:ys) = x : y : interleave xs ys
 
 Simple{\bf r} implementation:
 \begin{lstlisting}[language=Haskell]
-interleave :: [a] -> [a] -> [a]
+interleave ∷ [a] -> [a] -> [a]
 interleave [] ys = ys
 interleave (x:xs) ys = x : interleave ys xs
 \end{lstlisting}
@@ -270,9 +210,9 @@ for(int x = 0; ; x++)
 \begin{frame}[fragile]{Unfair interweave aka simplified $\gg\!\!=$}
 
 \begin{lstlisting}[language=Haskell]
-interweave :: [a] -> [b] -> [(a, b)]
+interweave ∷ [a] -> [b] -> [(a, b)]
 interweave [] ys = []
-interweave (x:xs) ys =
+interweave (x : xs) ys =
   map (\y -> (x, y)) ys ++ interweave xs ys
 \end{lstlisting}
 
@@ -288,9 +228,9 @@ $$\xymatrix{
 \begin{frame}[fragile]{Fair interweave aka simplified $\gg\!\!-$}
 
 \begin{lstlisting}[language=Haskell]
-interweave :: [a] -> [b] -> [(a, b)]
+interweave ∷ [a] -> [b] -> [(a, b)]
 interweave [] ys = []
-interweave (x:xs) ys =
+interweave (x : xs) ys =
   map (\y -> (x, y)) ys `interleave` interweave xs ys
 \end{lstlisting}
 
@@ -364,7 +304,7 @@ We can express $\exists$ via {\em nested list comprehensions:}
 {\bf Even better:} introduce {\tt once} to keep track of the evidence of compositeness:
 
 \begin{lstlisting}[language=Haskell]
-once :: [a] -> [a]
+once ∷ [a] -> [a]
 once []    = []
 once (x:_) = [x]
 
@@ -422,7 +362,7 @@ Can we express $\forall$ via $\exists$? Apply De Morgan's law:
 Introduce {\tt lnot} combinator (logical negation):
 
 \begin{lstlisting}[language=Haskell]
-lnot :: [a] -> [()]
+lnot ∷ [a] -> [()]
 lnot []    = [()]
 lnot (_:_) = []
 
@@ -468,7 +408,7 @@ lnot (_:_) = []
       about relational programming.
 \item Express all functions by means of a single combinator {\tt msplit}:
 \begin{lstlisting}[language=Haskell]
-msplit :: [a] -> [Maybe (a, [a])]
+msplit ∷ [a] -> [Maybe (a, [a])]
 msplit []     = [Nothing]
 msplit (x:xs) = [Just (x, xs)]
 \end{lstlisting}
