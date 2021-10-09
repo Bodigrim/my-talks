@@ -1,5 +1,8 @@
 # My talks
 
+* __tasty-bench: featherlight benchmark framework__, Haskell Love, 10.09.2021:
+  [slides](https://github.com/Bodigrim/my-talks/raw/master/haskelllove2021/slides.pdf).
+
 * __Polynomials in Haskell__, MuniHac, 12.09.2020:
   [slides](https://github.com/Bodigrim/my-talks/raw/master/munihac2020/slides.pdf).
 

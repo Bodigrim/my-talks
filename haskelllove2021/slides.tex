@@ -1,0 +1,466 @@
+\documentclass[handout]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage[T2A]{fontenc}
+\usepackage[english]{babel}
+\usepackage{graphicx}
+\usepackage{array}
+\usetheme{Warsaw}
+\usecolortheme{wolverine}
+
+\usepackage{fontawesome5}
+\usepackage{listings}
+\usepackage[all]{xy}
+\usepackage{changepage}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstdefinelanguage{Haskell}%
+  {otherkeywords={},%
+   morekeywords={as,case,class,data,default,deriving,do,else,family,forall,foreign,hiding,if,import,in,infix,infixl,infixr,instance,let,mdo,module,newtype,of,proc,qualified,rec,then,type,where},%
+   sensitive,%
+   morecomment=[l]--,%
+   morecomment=[n]{\{-}{-\}},%
+   morestring=[b]"%
+  }[keywords,comments,strings]%
+
+\lstset{
+  language=Haskell,
+  showstringspaces=false,
+  columns=flexible,
+  keepspaces=true,
+  basicstyle={\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  escapeinside={<@}{@>},
+  literate={²}{{$^2\;\!$}}1 {±}{{$\pm$}}1 {μ}{{$\mu$}}1 {α}{{$\alpha$}}1 {->}{{$\to$}}2 {=>}{{$\Rightarrow$}}2 {<-}{{$\leftarrow$}}2 {≤}{{$\leqslant$}}1 {<=}{{$\leqslant$}}1 {≥}{{$\geqslant$}}1 {>=}{{$\geqslant$}}1 {∷}{{$::$}}1 {::}{{$::$}}1 {...}{{\dots}}1
+}
+
+\def\ge{\geqslant}
+\def\le{\leqslant}
+
+\def\dd{\,.\,.\,}
+
+\definecolor{darkblue}{rgb}{0,0,0.8}
+\definecolor{darkgreen}{rgb}{0,0.6,0}
+\definecolor{darkred}{rgb}{1,0,0}
+
+\def\pros{\textcolor{darkgreen}{\bf Pros:} }
+\def\cons{\textcolor{darkred}{\bf Cons:} }
+
+\title[tasty-bench: featherlight benchmark framework]{{\bf tasty-bench:} \\ featherlight benchmark framework}
+\author[Andrew Lelechenko]{Andrew Lelechenko \\ \texttt{1@dxdy.ru}}
+% \institute{Haskell Foundation}
+\date{Haskell Love, 10.09.2021}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}{How dare you to fragment Haskell ecosystem?}
+
+\pause
+
+\begin{itemize}[<+->]
+\item Why was I unsatisfied with existing solutions? \par ~
+\item How does {\tt tasty-bench} solve my issues? \par ~
+\item What makes it valuable for testing of core libraries? \par ~
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]{{\tt criterion} output}
+
+\centerline{\bf The very first example from {\tt criterion} tutorial:}
+
+\begin{lstlisting}[language=Haskell]
+benchmarking fib/1
+time                 23.91 ns   (23.30 ns .. 24.54 ns)
+                     0.994 R²   (0.991 R² .. 0.997 R²)
+mean                 24.36 ns   (23.77 ns .. 24.97 ns)
+std dev              2.033 ns   (1.699 ns .. 2.470 ns)
+variance introduced by outliers: 88% (severely inflated)
+\end{lstlisting}
+
+\pause
+
+\begin{itemize}[<+->]
+\item 13 quantities!
+\item Which quantity is the benchmark?
+\item What is characterized by bounds?
+\item Is this $R^2$ good enough?
+\item Is outliers' influence too bad?
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]{{\tt criterion} output}
+
+\centerline{\bf The very first example from {\tt criterion} tutorial:}
+
+\begin{lstlisting}[language=Haskell]
+benchmarking fib/1
+time                 23.91 ns   (23.30 ns .. 24.54 ns)
+                     0.994 R²   (0.991 R² .. 0.997 R²)
+mean                 24.36 ns   (23.77 ns .. 24.97 ns)
+std dev              2.033 ns   (1.699 ns .. 2.470 ns)
+variance introduced by outliers: 88% (severely inflated)
+\end{lstlisting}
+
+\pause
+
+\bigskip
+
+\begin{itemize}[<+->]
+\item Understanding results should not require a PhD in statistics.
+\item If results are flawed, do not bother showing them\dots
+\item \dots and rerun automatically until desired quality is achieved.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]{What time are we talking about?}
+
+By default {\tt criterion} reports {\bf wall-clock time}
+
+\begin{itemize}[<+->]
+\item which is directly affected by any other application\dots
+\item \dots and system service\dots
+\item \dots and watching Youtube\dots
+\item \dots and scrolling Facebook.
+\end{itemize}
+
+\pause\bigskip
+
+There are two possible solutions:
+
+\begin{itemize}[<+->]
+\item either exercise iron willpower and restraint from delights,
+\item or measure per-process {\bf CPU time.}
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]{Comparing competing solutions}
+
+\begin{lstlisting}[language=Haskell]
+benchmarking mergesort
+time                 23.91 ns   (23.30 ns .. 24.54 ns)
+                     0.994 R²   (0.991 R² .. 0.997 R²)
+mean                 24.36 ns   (23.77 ns .. 24.97 ns)
+std dev              2.033 ns   (1.699 ns .. 2.470 ns)
+variance introduced by outliers: 88% (severely inflated)
+
+benchmarking quicksort
+time                 25.61 ns   (24.91 ns .. 26.45 ns)
+                     0.993 R²   (0.990 R² .. 0.998 R²)
+mean                 25.96 ns   (25.15 ns .. 26.51 ns)
+std dev              1.700 ns   (1.563 ns .. 1.922 ns)
+variance introduced by outliers: 85% (severely inflated)
+\end{lstlisting}
+
+\pause
+
+
+\centerline{\bf How much faster is {\tt mergesort} than {\tt quicksort}?}
+
+\end{frame}
+
+\begin{frame}[fragile]{Comparing against baseline}
+
+\centerline{\bf Imagine yourself reviewing a PR:}
+
+\begin{itemize}[<+->]
+\item Ask a contributor to run benchmarks.
+\item Receive a wall of numbers.
+\item Ask to run benchmarks before and after the patch.
+\item Receive two walls of numbers.
+\item Ask to generate CSV reports.
+\item Good luck comparing them.
+\end{itemize}
+
+\pause
+
+\bigskip
+
+Can we replace manual performance testing with automated?
+
+\end{frame}
+
+\begin{frame}[fragile]{Living on the edge}
+
+\centerline{\bf How to test performance against GHC HEAD?}
+
+\begin{itemize}[<+->]
+\item {\tt gauge} has few dependencies.
+\item But recently they are not updated in time.
+\item {\tt criterion} has a lot of well-maintained dependencies.
+\item But building them all takes ages\dots
+\item \dots and they most certainly include the package you are interested to benchmark.
+\item Good luck to cut circular dependencies.
+\end{itemize}
+
+\bigskip\pause
+
+Running benchmarks only once GHC is released is already too late!
+
+\end{frame}
+
+\begin{frame}{Writing a new benchmark framework}
+
+\pause
+
+{\bf Reinventing the wheel:}
+\begin{itemize}[<+->]
+\item Support a hierarchy of benchmarks.
+\item Manage resources.
+\item Handle exceptions gracefully.
+\item Generate pretty console output.
+\item List all available benchmarks.
+\item Filter benchmarks by name.
+\item Provide an extensible CLI.
+\end{itemize}
+
+\pause
+\bigskip
+
+{\bf Solution:} \par
+use a mature testing framework to provide all of this and more.
+
+\end{frame}
+
+\begin{frame}{Benchmarks as tests}
+
+{\bf Everything can be expressed as {\tt tasty} plugins:}
+\begin{itemize}[<+->]
+\item {\tt type Benchmark = TestTree}
+\item There is a test provider with {\tt instance IsTest Benchmarkable}.
+\item Resources and exceptions are managed by {\tt tasty}.
+\item Console output is a usual {\tt consoleTestReporteer}
+      extended with a hook to emit additional information.
+\item CSV and SVG reporters are normal {\tt Ingredient}s.
+\item CLI, listing and filtering are all native {\tt tasty} functionality.
+\end{itemize}
+
+\pause
+\bigskip
+
+We can concentrate solely on great benchmarking experience.
+
+\end{frame}
+
+\begin{frame}[fragile]{API is compatible with {\tt criterion} and {\tt gauge}}
+
+\begin{lstlisting}[language=Haskell]
+import Test.Tasty.Bench
+
+fibo :: Int -> Integer
+fibo n
+  | n < 2     = toInteger n
+  | otherwise = fibo (n - 1) + fibo (n - 2)
+
+main :: IO ()
+main = defaultMain
+  [ bgroup "fibonacci numbers"
+    [ bench "fifth"     $ nf fibo  5
+    , bench "tenth"     $ nf fibo 10
+    , bench "twentieth" $ nf fibo 20
+    ]
+  ]
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{Output format}
+
+{\bf Goal-based ({\tt ----stdev N}) measurement of CPU time:}
+\begin{lstlisting}[language=Haskell]
+All
+  fibonacci numbers
+    fifth:     OK (2.13s)
+       63 ns ± 3.4 ns
+    tenth:     OK (1.71s)
+      809 ns ±  73 ns
+    twentieth: OK (3.39s)
+      104 μs ± 4.9 μs
+\end{lstlisting}
+
+\pause\bigskip
+
+{\bf CSV:}
+\begin{lstlisting}[language=Haskell]
+All.fibonacci numbers.fifth,63453,3460
+All.fibonacci numbers.tenth,809152,73744
+All.fibonacci numbers.twentieth,104369531,4942646
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{{\tt tasty-bench} can read CSV as well}
+
+\pause
+
+\begin{itemize}[<+->]
+\item Prepare baseline CSV with {\tt ----csv}.
+\item Apply a patch.
+\item Rerun against baseline with {\tt ----baseline}.
+\end{itemize}
+
+\pause\bigskip
+
+\begin{lstlisting}[language=Haskell]
+All
+  fibonacci numbers
+    fifth:     OK (0.44s)
+       53 ns ± 2.7 ns,  8% slower than baseline
+    tenth:     OK (0.33s)
+      641 ns ±  59 ns
+    twentieth: OK (0.36s)
+       77 μs ± 6.4 μs,  5% faster than baseline
+\end{lstlisting}
+
+
+\end{frame}
+
+\begin{frame}[fragile]{Convert benchmarks to real tests}
+
+\begin{itemize}[<+->]
+\item {\tt ----fail-if-slower N} to mark all slow downs as failures.
+\item {\tt ----fail-if-faster N} to mark all speed ups as failures.
+\item {\tt ----hide-successes} to focus on problematic benchmarks only.
+\end{itemize}
+
+\pause\bigskip
+
+\begin{lstlisting}[language=Haskell]
+All
+  fibonacci numbers
+    fifth:     FAIL (0.44s)
+       53 ns ± 2.7 ns,  8% slower than baseline
+    twentieth: FAIL (0.36s)
+       77 μs ± 6.4 μs,  5% faster than baseline
+\end{lstlisting}
+
+\pause\bigskip
+
+One can also mix benchmarks with unit/property/etc. tests
+in the same suite to check performance and correctness simultaneously.
+
+\end{frame}
+
+\begin{frame}[fragile]{Compare competing implementations}
+
+\begin{lstlisting}[language=Haskell]
+import Test.Tasty.Bench
+
+fibo :: Int -> Integer
+fibo n
+  | n < 2     = toInteger n
+  | otherwise = fibo (n - 1) + fibo (n - 2)
+
+main :: IO ()
+main = defaultMain
+  [ bgroup "fibonacci numbers"
+    [ bcompare "tenth"  $ bench "fifth"     $ nf fibo  5
+    ,                     bench "tenth"     $ nf fibo 10
+    , bcompare "tenth"  $ bench "twentieth" $ nf fibo 20
+    ]
+  ]
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{Compare competing implementations}
+
+\begin{lstlisting}[language=Haskell]
+All
+  fibonacci numbers
+    fifth:     OK (16.56s)
+      121 ns ± 2.6 ns, 0.08x
+    tenth:     OK (6.84s)
+      1.6 μs ±  31 ns
+    twentieth: OK (6.96s)
+      203 μs ± 4.1 μs, 128.36x
+\end{lstlisting}
+
+\pause\bigskip
+
+{\bf Coming soon:} portable performance regression tests, which do not depend on baselines.
+
+\end{frame}
+
+\begin{frame}{{\tt tasty-bench} for Core libraries}
+
+\begin{itemize}[<+->]
+\item Allows to immerse benchmarks into the main package.
+\item Simplifies CI setup and turn around.
+\item Improves contributors' experience.
+\item Prevents maintainers' burnout.
+\item Provides answers to important questions faster.
+\item Supports bleeding-edge GHC and rebuilds quickly.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Current status}
+
+\begin{itemize}[<+->]
+\item Only 676 lines of portable Haskell code.
+\item Includes console, CSV and SVG reporters.
+\item Built-in comparison between items and between runs.
+\item No dependencies except implied by {\tt tasty}.
+\item Builds up to a magnitude faster than competitors.
+\item Supports GHCs from 7.0 to 9.2 and HEAD.
+\item API is compatible with {\tt criterion} and {\tt gauge}.
+\item Early adopters include
+      {\tt bytestring}, {\tt text}, {\tt primitive}, {\tt vector}, {\tt random},
+      {\tt optics}, {\tt effectful}, {\tt fused-effects},
+      {\tt streamly}, {\tt tar}, {\tt pandoc}, {\tt commonmark}.
+\item I would never have managed to switch {\tt text} to UTF-8 without {\tt tasty-bench}.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Grand Unified {\em Testing} Theory}
+
+
+\begin{itemize}[<+->]
+\item {\tt tasty-bench} is not about fragmentation of benchmark suites.
+\item {\tt tasty-bench} is about unifying testing landscape:
+\item both technically, by being just a plugin for {\tt tasty},
+\item and ideologically, by making performance regression testing more accessible than ever.
+\end{itemize}
+
+\bigskip
+\bigskip
+\bigskip
+\bigskip
+
+\pause
+
+\centerline{\Huge\bf Thank you!}
+
+\bigskip
+\bigskip
+\bigskip
+
+\centerline{
+~~\,\!\! \faAt\ 1@dxdy.ru ~~ \par \faTelegram\ Bodigrim
+}
+
+\medskip
+
+\centerline{
+\par \faGithub\ github.com/Bodigrim/tasty-bench ~~
+\par \faGithub\ github.com/Bodigrim/my-talks
+}
+
+\end{frame}
+
+\end{document}
