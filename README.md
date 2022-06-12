@@ -1,5 +1,8 @@
 # My talks
 
+* __The `text` package: finally with UTF-8__, ZuriHac, 12.06.2022:
+  [slides](https://github.com/Bodigrim/my-talks/raw/master/zurihac2022/slides.pdf).
+
 * __QuickCheck tips and tricks__, 第五届函数编程分享会, 10.07.2021:
   [transcript](https://github.com/Bodigrim/my-talks/blob/master/shanghai2021/talk.md),
   [video](https://www.bilibili.com/medialist/play/ml1295477697/BV13B4y1K7c3).
