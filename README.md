@@ -9,7 +9,7 @@
   [video](https://www.bilibili.com/medialist/play/ml1295477697/BV13B4y1K7c3).
 
 * __tasty-bench: featherlight benchmark framework__, Haskell Love, 10.09.2021:
-  [slides](https://github.com/Bodigrim/my-talks/raw/master/haskelllove2021/slides.pdf).
+  [slides](https://github.com/Bodigrim/my-talks/raw/master/haskelllove2021/slides.pdf), [video](https://youtu.be/EHVz5j1gYkk).
 
 * __Polynomials in Haskell__, MuniHac, 12.09.2020:
   [slides](https://github.com/Bodigrim/my-talks/raw/master/munihac2020/slides.pdf).
