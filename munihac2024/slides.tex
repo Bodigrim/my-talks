@@ -65,22 +65,26 @@
 
 \end{frame}
 
-\begin{frame}{Quiz time --- 1}
+\begin{frame}{Quiz time}
 
-\begin{itemize}[<+->]
+\begin{itemize}
 
-\item CLC appoints Hackage trustees.
-\item CLC maintains {\tt bytestring} package.
-\item CLC approves changes to {\tt Data.Text}.
-\item You need CLC assent to add new GHC RTS flags.
-\item CLC can amend Haskell Package Versioning Policy.
-\item CLC owns {\tt haskeline} and {\tt terminfo} packages.
-\item Bug fixes in {\tt base} do not need CLC assent.
-\item Changes to {\tt ghc-internal} are out of scope for CLC.
-\item Moving implementation of {\tt base} elsewhere involves CLC.
-\item CLC is responsible for stability of {\tt base}.
-\item Adding class laws for {\tt Num} falls under CLC purview.
-\item Documentation for {\tt Data.List} must be verified by CLC.
+\def\yes{\textcolor{darkgreen}{Yes.}}
+\def\no{\textcolor{darkred}{No.}}
+
+\item CLC appoints Hackage trustees. \no
+\item CLC maintains {\tt bytestring} package. \no
+\item CLC approves changes to {\tt Data.Text}. \no
+\item You need CLC assent to add new GHC RTS flags. \yes
+\item CLC can amend Haskell Package Versioning Policy. \yes
+\item CLC owns {\tt haskeline} and {\tt terminfo} packages. \yes
+\item Bug fixes in {\tt base} do not need CLC assent. \yes
+\item Changes to {\tt ghc-internal} are out of scope for CLC. \no
+\item Moving implementation of {\tt base} elsewhere involves CLC. \no
+\item CLC is responsible for stability of {\tt base}. \no
+% CLC is politically neutral.
+\item Adding class laws for {\tt Num} falls under CLC purview. \yes
+\item Documentation for {\tt Data.List} must be verified by CLC. \no
 
 \end{itemize}
 
@@ -110,31 +114,6 @@
 
 \end{frame}
 
-\begin{frame}{Quiz time --- 2}
-
-\begin{itemize}
-
-\def\yes{\textcolor{darkgreen}{Yes.}}
-\def\no{\textcolor{darkred}{No.}}
-
-\item CLC appoints Hackage trustees. \no
-\item CLC maintains {\tt bytestring} package. \no
-\item CLC approves changes to {\tt Data.Text}. \no
-\item You need CLC assent to add new GHC RTS flags. \yes
-\item CLC can amend Haskell Package Versioning Policy. \yes
-\item CLC owns {\tt haskeline} and {\tt terminfo} packages. \yes
-\item Bug fixes in {\tt base} do not need CLC assent. \yes
-\item Changes to {\tt ghc-internal} are out of scope for CLC. \no
-\item Moving implementation of {\tt base} elsewhere involves CLC. \no
-\item CLC is responsible for stability of {\tt base}. \no
-% CLC is politically neutral.
-\item Adding class laws for {\tt Num} falls under CLC purview. \yes
-\item Documentation for {\tt Data.List} must be verified by CLC. \no
-
-\end{itemize}
-
-\end{frame}
-
 \begin{frame}{PVP: Haskell Package Versioning Policy}
 
 \begin{itemize}[<+->]
@@ -159,26 +138,29 @@
 % * Why usual Hackage takeover process is insufficient?
 % * Why maintainers abandon packages and lose engagement?
 
+\vspace{-0.5em}
+
 \begin{table}[c]
 \begin{tabular}{lccc}
-Package          & Boot & Core 2021 & Core 2024 \\
+Package          & Boot              & Core 2021 & Core 2024          \\
 \hline
-array            & +    & +         & +         \\
-binary           & +    &           & \cellcolor{green}+          \\
-bytestring       & +    & +         & +         \\
-Cabal            & \cellcolor{red}+    &           &           \\
-Cabal-syntax     & \cellcolor{red}+    &           &           \\
-containers       & \cellcolor{red}+    &           &           \\
-deepseq          & +    & +         & +         \\
-directory        & +    & +         & +         \\
-entropy          &      &           & \cellcolor{green}+         \\
-exceptions       & \cellcolor{red}+    &           &           \\
-file-io          & +    &           & \cellcolor{green}+         \\
-filepath         & +    & +         & +         \\
-haskeline        & +    &           & \cellcolor{green}+         \\
-hpc              & \cellcolor{red}+    &           &           \\
-mtl              & +    & +         & +         \\
-os-string        & +    &           & \cellcolor{green}+         \\
+array            & +                 & +         & +                  \\
+binary           & +                 &           & \cellcolor{green}+ \\
+bytestring       & +                 & +         & +                  \\
+Cabal            & +                 &           & \cellcolor{green}+ \\
+Cabal-syntax     & +                 &           & \cellcolor{green}+ \\
+cabal-install    &                   &           & \cellcolor{green}+ \\
+cabal-install-solver &               &           & \cellcolor{green}+ \\
+containers       & \cellcolor{red}+  &           &                    \\
+deepseq          & +                 & +         & +                  \\
+directory        & +                 & +         & +                  \\
+entropy          &                   &           & \cellcolor{green}+ \\
+exceptions       & \cellcolor{red}+  &           &                    \\
+file-io          & +                 &           & \cellcolor{green}+ \\
+filepath         & +                 & +         & +                  \\
+haskeline        & +                 &           & \cellcolor{green}+ \\
+hpc              & +                 &           & \cellcolor{green}+ \\
+mtl              & +                 & +         & +                  \\
 \end{tabular}
 \end{table}
 
@@ -188,23 +170,24 @@ os-string        & +    &           & \cellcolor{green}+         \\
 
 \begin{table}[c]
 \begin{tabular}{lccc}
-Package          & Boot & Core 2021 & Core 2024 \\
+Package          & Boot              & Core 2021 & Core 2024          \\
 \hline
-parsec           & \cellcolor{red}+    &           &           \\
-pretty           & \cellcolor{red}+    &           &           \\
-primitive        &      & +         & +         \\
-process          & +    & +         & +         \\
-random           &      & +         & +         \\
-stm              & +    & +         & +         \\
-template-haskell & +    & +         & +         \\
-terminfo         & +    &           & \cellcolor{green}+         \\
-text             & +    & +         & +         \\
-time             & \cellcolor{red}+    &           &           \\
-transformers     & +    &           & \cellcolor{green}+         \\
-unix             & +    & +         & +         \\
-vector           &      & +         & +         \\
-Win32            & +    & +         & +         \\
-xhtml            & +    &           & \cellcolor{green}+         \\
+os-string        & +                 &           & \cellcolor{green}+ \\
+parsec           & \cellcolor{red}+  &           &                    \\
+pretty           & \cellcolor{red}+  &           &                    \\
+primitive        &                   & +         & +                  \\
+process          & +                 & +         & +                  \\
+random           &                   & +         & +                  \\
+stm              & +                 & +         & +                  \\
+template-haskell & +                 & +         & +                  \\
+terminfo         & +                 &           & \cellcolor{green}+ \\
+text             & +                 & +         & +                  \\
+time             & \cellcolor{red}+  &           &                    \\
+transformers     & +                 &           & \cellcolor{green}+ \\
+unix             & +                 & +         & +                  \\
+vector           &                   & +         & +                  \\
+Win32            & +                 & +         & +                  \\
+xhtml            & +                 &           & \cellcolor{green}+ \\
 \end{tabular}
 \end{table}
 
