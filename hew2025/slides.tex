@@ -1,0 +1,601 @@
+\documentclass[handout]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage[T2A]{fontenc}
+\usepackage[english]{babel}
+\usepackage{graphicx}
+\usepackage{array}
+\usetheme{Warsaw}
+\usecolortheme{wolverine}
+
+\usepackage{fontawesome5}
+\usepackage{changepage}
+\usepackage{soul}
+\usepackage[table]{xcolor}
+\usepackage{listings}
+\usepackage{relsize}
+
+\definecolor{ukraine-blue}{rgb}{0,0.34,0.72}
+\definecolor{ukraine-yellow}{rgb}{1,0.84,0}
+
+\setbeamercolor{title}{fg=ukraine-blue,bg=ukraine-yellow}
+\setbeamercolor{frametitle}{fg=ukraine-blue,bg=ukraine-yellow}
+\setbeamercolor{section in head/foot}{fg=ukraine-blue}
+\setbeamercolor{title in head/foot}{fg=ukraine-blue,bg=ukraine-yellow}
+\setbeamercolor{author in head/foot}{fg=ukraine-yellow,bg=ukraine-blue}
+
+\lstdefinelanguage{Haskell}%
+  {otherkeywords={},%
+   morekeywords={as,case,class,data,default,deriving,do,else,family,forall,foreign,hiding,if,import,in,infix,infixl,infixr,instance,let,mdo,module,newtype,of,proc,qualified,rec,then,type,where},%
+   sensitive,%
+   morecomment=[l]--,%
+   morecomment=[n]{\{-}{-\}},%
+   morestring=[b]"%
+  }[keywords,comments,strings]%
+
+\lstset{
+  language=Haskell,
+  showstringspaces=false,
+  columns=flexible,
+  keepspaces=true,
+  basicstyle={\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{darkgreen},
+  stringstyle=\color{mauve},
+  escapeinside={<@}{@>},
+  literate={²}{{$^2\;\!$}}1 {±}{{$\pm$}}1 {μ}{{$\mu$}}1 {α}{{$\alpha$}}1 {->}{{$\to$}}2 {=>}{{$\Rightarrow$}}2 {<-}{{$\leftarrow$}}2 {≤}{{$\leqslant$}}1 {<=}{{$\leqslant$}}1 {≥}{{$\geqslant$}}1 {>=}{{$\geqslant$}}1 {∷}{{$::$}}1 {::}{{$::$}}1 {...}{{\dots}}1
+}
+
+\definecolor{darkblue}{rgb}{0,0,0.8}
+\definecolor{darkgreen}{rgb}{0,0.6,0}
+\definecolor{darkred}{rgb}{1,0,0}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\title{Not-So-Boring Haskell}
+\author[Andrew Lelechenko]{Andrew Lelechenko \\ \texttt{andrew.lelechenko@gmail.com}}
+\date{Haskell Ecosystem Workshop, 05.06.2025}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\def\boring{
+\begin{frame}{Michael Snoyman, Boring Haskell Manifesto, Nov 2019}
+
+Haskell has [two overlapping] subcultures:
+\begin{itemize}
+\item Explore interesting and revolutionary concepts in computer science,
+      software engineering, and mathematics.
+\item Make better software.
+\end{itemize}
+
+\ldots
+
+Exploring these [interesting and revolutionary] concepts can be fun, rewarding, and---long term---a huge benefit for productivity. Short and medium term, however, this exploration can lead to slower and less reliable results.
+
+\ldots
+
+\ldots a simple, well-defined subset of Haskell's language and ecosystem will deliver large value for a project, while introducing little to no risk compared to alternative options. We call this subset, somewhat tongue-in-cheek, ``boring Haskell''.
+
+\end{frame}
+}
+
+\def\simple{
+\begin{frame}{The Simple Haskell Initiative, Dec 2019}
+
+\begin{description}
+\item[Accessibility]
+Commercial software is a team endeavor. Fancy Haskell is costly to teams because it usually takes more time to understand and limits the pool of people who can effectively contribute.
+
+\item[Maturity]
+Things that have been around longer will be more well-tested and understood by a larger group of people. Prefer tried and true techniques over the latest shiny library or language feature. The more foundational something is in your tech stack, the more conservative you should be about adopting new versions or approaches to that thing.
+
+\item[Leaking Complexity] ~ \par
+If you adopt a new thing, how much of its complexity will spread throughout the rest of your codebase? You should be more hesitant to adopt something if its complexity is going to spread through a larger portion of your codebase.
+
+\end{description}
+
+\end{frame}
+}
+
+\boring
+\simple
+\boring
+
+\begin{frame}{Year 2025}
+
+\begin{itemize}[<+->]\itemsep3ex
+\item Haskell is no longer an exploration vehicle {\it per se.}
+\item It is a productionalisation lab, dedicated to
+      converting designs to practical tools
+      and {\it making better software.}
+\item Limiting feature set is not going to make your code simpler,
+      quite the opposite of it.
+\item Our unique selling proposition: \par ~~ {\bf explore without sacrificing reliability or time-to-market.}
+\item Our core enabler: \par ~~ {\bf fearless refactoring.}
+\end{itemize}
+
+\end{frame}
+
+\simple
+
+\begin{frame}{Year 2025}
+
+\begin{description}[<+->]
+\item[Accessibility]
+Curiosity is what has driven us to use Haskell in the first place.
+We should exploit this instinct and lean on the fact that people
+like puzzles.
+\item[Maturity]
+Let people indulge themselves and experiment with the very latest shiny libraries.
+Learning new things is exciting and not tedious. It's easy to replace libraries.
+\item[Leaking Complexity] ~ \par
+It's cheap to demote and dismantle complexity, if it does not work out.
+Refactoring is Haskell superpower.
+\end{description}
+
+\bigskip
+\pause
+
+In 2025 anything boring is better left to AI.
+Jump on the new train:
+
+\bigskip
+
+\centerline{\bf\Large Puzzling Haskell}
+
+\end{frame}
+
+\title{Puzzling Haskell}
+
+\begin{frame}{Rules of the game}
+
+\begin{itemize}[<+->]
+
+\item It is not a pub quiz! You are not supposed to know the answer beforehand.
+
+\item Puzzle should offer a systematic
+      way to analyze and solve it without prior knowledge.
+
+\item Puzzle solving should not be tedious; write as little code as possible.
+
+\item Each puzzle on its own should be small enough to take in at a glance.
+      Long-distance interaction is bad.
+
+\item Keep asking yourself: can this puzzle be solved in a finite amount of time?
+
+\item Solving process offers a tight feedback loop.
+      Both compile time and runtime should be fast.
+
+\item It's not fun to solve the same puzzle twice. Solutions must be robust
+      and survive through ecosystem and tooling upgrades.
+
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Upgrade policy --- 1}
+
+{\it Fearless refactoring} is both a blessing and a curse:
+\begin{itemize}[<+->]
+  \item It's very easy to accommodate almost any change.
+  \item {\it Because of this,} library authors tend to make breaking changes,
+        they would never have attempted in Python or JavaScript.
+\end{itemize}
+
+\bigskip
+\bigskip
+\bigskip
+
+\pause
+
+Rock solid build environments are similar:
+\begin{itemize}[<+->]
+  \item It's easy to set up and protect
+        a uniform reproducible environment everywhere.
+  \item But if / when you get out of this ivory tower,
+        the real world can overwhelm you.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Upgrade policy --- 2}
+
+{\bf Vicious cycle:}
+\begin{itemize}[<+->]
+  \item Wait until a last minor GHC release.
+  \item Wait until Stackage LTS is available.
+  \item Try to upgrade.
+  \item Hit a bug in GHC.
+  \item Find that a package is missing from Stackage.
+  \item Rinse and repeat.
+\end{itemize}
+
+\bigskip
+
+{\bf Solution:}
+\begin{itemize}[<+->]
+  \item Set in stone production environment.
+  \item As fluid as possible development environment.
+  \item You have to fix breakage anyway, so why not do it early?
+  \item Constant pain is the best trainer to avoid unmaintainable code.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]{{\tt Template Haskell} is a pub quiz}
+
+In GHC 9.8 {\tt TyVarBndr ()} changed
+to {\tt TyVarBndr BndrVis} in multiple places.
+
+\bigskip
+
+\begin{lstlisting}[language=Haskell]
+-- | The @flag@ type parameter is instantiated to
+-- * 'Specificity' (examples: 'ForallC', 'ForallT')
+-- * 'BndrVis' (examples: 'DataD', 'ClassD', etc.)
+-- * '()', a catch-all type for other forms of binders...
+data TyVarBndr flag
+  = PlainTV  Name flag      -- ^ @a@
+  | KindedTV Name flag Kind -- ^ @(a :: k)@
+
+data BndrVis
+  = BndrReq   -- ^ @a@
+  | BndrInvis -- ^ @\@a@
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}{GHC plugins are not even puzzles}
+
+\begin{itemize}[<+->]\itemsep3ex
+  \item Plugins have to deal with raw AST, so fragile for the same reason TH is.
+  \item But even worse: plugins are black boxes.
+  \item Plugin errors are custom, hardly relatable to code you wrote.
+  \item Reading finite amount of manuals is good.
+  \item Reading infinite amount of code is bad.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]{Tools to solve puzzles}
+
+\centerline{\bf Enable your code for hole-driven development:}
+\centerline{\bf employ as many fine-grained types as possible}
+
+\pause
+
+\bigskip
+\bigskip
+
+\begin{lstlisting}[language=Haskell]
+> :set -fno-show-provenance-of-hole-fits
+> import Data.Monoid
+> _ [1,2,3] :: Sum Integer
+* Found hole: _ :: [Integer] -> Sum Integer
+  Valid hole fits include
+    mempty :: forall a. Monoid a => a
+      with mempty @([Integer] -> Sum Integer)
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{Hole-driven development}
+
+\begin{lstlisting}[language=Haskell]
+> :set -frefinement-level-hole-fits=1
+> _ [1,2,3] :: Sum Integer
+* Found hole: _ :: [Integer] -> Sum Integer
+  Valid hole fits include
+    mempty :: forall a. Monoid a => a
+      with mempty @([Integer] -> Sum Integer)
+  Valid refinement hole fits include
+    const (_ :: Sum Integer)
+      where const :: forall a b. a -> b -> a
+      with const @(Sum Integer) @[Integer]
+    foldMap (_ :: Integer -> Sum Integer)
+      where foldMap :: forall (t :: * -> *) m a.
+                       (Foldable t, Monoid m) =>
+                       (a -> m) -> t a -> m
+      with foldMap @[] @(Sum Integer) @Integer
+\end{lstlisting}
+
+\centerline{
+  Core rule: {\bf avoid features which weaken type inference.}
+}
+
+\end{frame}
+
+\begin{frame}{So many extensions, so little time}
+
+\tiny
+
+\vspace{-2ex}
+
+\begin{columns}[T]
+  \begin{column}{.33\textwidth}
+    \begin{itemize}\itemsep0em \itemindent-1.5em
+      \item AllowAmbiguousTypes \item AlternativeLayoutRule \item ApplicativeDo \item Arrows \item AutoDeriveTypeable \item BangPatterns \item BinaryLiterals \item BlockArguments \item CApiFFI \item ConstrainedClassMethods \item ConstraintKinds \item CPP \item CUSKs \item DataKinds \item DatatypeContexts \item DeepSubsumption \item DefaultSignatures \item DeriveAnyClass \item DeriveDataTypeable \item DeriveFoldable \item DeriveFunctor \item DeriveGeneric \item DeriveLift \item DeriveTraversable \item DerivingStrategies \item DerivingVia \item DisambiguateRecordFields \item DoAndIfThenElse \item DoRec \item DuplicateRecordFields \item EmptyCase \item EmptyDataDecls \item EmptyDataDeriving \item ExistentialQuantification
+    \end{itemize}
+  \end{column}
+  \begin{column}{.35\textwidth}
+    \begin{itemize}\itemsep0mm\itemindent-3.2em
+      \item ExplicitForAll \item ExplicitNamespaces \item ExtendedDefaultRules \item ExtendedLiterals \item FieldSelectors \item FlexibleContexts \item FlexibleInstances \item ForeignFunctionInterface \item FunctionalDependencies \item GADTs \item GADTSyntax \item GeneralisedNewtypeDeriving \item GHCForeignImportPrim \item HexFloatLiterals \item ImplicitParams \item ImplicitPrelude \item ImportQualifiedPost \item ImpredicativeTypes \item IncoherentInstances \item InstanceSigs \item InterruptibleFFI \item JavaScriptFFI \item KindSignatures \item LambdaCase \item LexicalNegation \item LiberalTypeSynonyms \item LinearTypes \item ListTuplePuns \item MagicHash \item MonadComprehensions \item MonoLocalBinds \item MonomorphismRestriction \item MultilineStrings \item MultiParamTypeClasses
+    \end{itemize}
+  \end{column}
+  \begin{column}{.32\textwidth}
+    \begin{itemize}\itemsep0mm\itemindent-5em
+      \item MultiWayIf \item NamedDefaults \item NamedFieldPuns \item NamedWildCards \item NegativeLiterals \item NPlusKPatterns \item NullaryTypeClasses \item NumDecimals \item NumericUnderscores \item OrPatterns \item OverlappingInstances \item OverloadedLabels \item OverloadedLists \item OverloadedRecordDot \item OverloadedRecordUpdate \item OverloadedStrings \item PackageImports \item ParallelArrays \item ParallelListComp \item PartialTypeSignatures \item PatternGuards \item PatternSignatures \item PatternSynonyms \item PolyKinds \item PostfixOperators \item QualifiedDo \item QuantifiedConstraints \item QuasiQuotes \item RankNTypes \item RebindableSyntax \item RecordPuns \item RecordWildCards \item RecursiveDo \item RelaxedLayout
+    \end{itemize}
+  \end{column}
+  \begin{column}{.33\textwidth}
+    \begin{itemize}\itemsep0mm\itemindent-6.2em
+      \item RelaxedPolyRec \item RequiredTypeArguments \item RoleAnnotations \item Safe \item ScopedTypeVariables \item StandaloneDeriving \item StandaloneKindSignatures \item StarIsType \item StaticPointers \item Strict \item StrictData \item TemplateHaskell \item TemplateHaskellQuotes \item TransformListComp \item Trustworthy \item TupleSections \item TypeAbstractions \item TypeApplications \item TypeData \item TypeFamilies \item TypeFamilyDependencies \item TypeInType \item TypeOperators \item TypeSynonymInstances \item UnboxedSums \item UnboxedTuples \item UndecidableInstances \item UndecidableSuperClasses \item UnicodeSyntax \item UnliftedDatatypes \item UnliftedFFITypes \item UnliftedNewtypes \item Unsafe \item ViewPatterns
+    \end{itemize}
+
+  \end{column}
+
+\end{columns}
+
+\end{frame}
+
+\begin{frame}{Language extensions}
+
+\begin{itemize}[<+->]\itemsep3ex
+  \item Syntactic extensions are fine, even exotic ones,
+        because they allow us to write less code.
+  \item Record extensions are fine. {\tt RecordWildCards} are tempting,
+        but essentially a form of and as bad as name shadowing.
+  \item Deriving extensions are great, saving boilerplate.
+  \item Safe Haskell is too fragile, avoid at all costs.
+  \item Overloading harms type inference, so undesirable.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]{{\tt OverloadedLists} harms hole-driven development}
+
+\begin{lstlisting}[language=Haskell]
+> :set -XOverloadedLists
+> _ [1,2,3] :: Sum Integer
+<interactive>:1:1: error: [GHC-88464]
+* Found hole: _ :: t0 -> Sum Integer
+  Where: 't0' is an ambiguous type variable
+  Valid hole fits include
+    mconcat :: Monoid a => [a] -> a
+    sconcat :: Semigroup a => GHC.Base.NonEmpty a -> a
+    head :: HasCallStack => [a] -> a
+    last :: HasCallStack => [a] -> a
+    maximum :: (Foldable t, Ord a) => t a -> a
+    minimum :: (Foldable t, Ord a) => t a -> a
+<interactive>:1:3: error: [GHC-39999]
+* Ambiguous type variable 't0' arising from an overloaded
+  list prevents the constraint IsList t0 from being solved.
+* Ambiguous type variable 't0' arising from the literal '1'
+  prevents the constraint Num (Item t0) from being solved.
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}{Type system extensions}
+
+\begin{itemize}[<+->]\itemsep3ex
+  \item Core rule:
+        {\bf make the type system more powerful without weakening inference.}
+
+  \item GADTs are double-edged:
+        they can greatly refine typed hole suggestions,
+        but also complicate type inference.
+
+  \item Type-level programming and Dependent Haskell are fine!..
+        as~long as you can avoid {\tt TemplateHaskell} and GHC plugins.
+
+  \item Linear Haskell is also fine.
+
+  \item Advanced types are easy to demote to {\tt Haskell2010}.
+
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]{Ad-hoc polymorphism}
+
+\begin{itemize}[<+->]
+  \item Resist the urge to introduce a type class.
+  \item Resist the urge to introduce a type class with a type family at~all~costs.
+  \item Ripping off badly designed type class can get very costly.
+\end{itemize}
+
+\pause
+
+\begin{lstlisting}[language=Haskell]
+class IsList l where
+  type Item l
+  fromList :: [Item l] -> l
+  toList :: l -> [Item l]
+
+> :set -XOverloadedLists
+> _ [1,2,3] :: Sum Integer
+<interactive>:1:3: error: [GHC-39999]
+* Ambiguous type variable 't0' arising from an overloaded
+  list prevents the constraint IsList t0 from being solved.
+* Ambiguous type variable 't0' arising from the literal '1'
+  prevents the constraint Num (Item t0) from being solved.
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{Type classes and open type families}
+
+\begin{lstlisting}[language=Haskell]
+{-# LANGUAGE TypeFamilies #-}
+
+class Consume what how where
+  type Output what how
+  consume :: what -> how -> output
+
+instance Consume Soup Spoon
+instance Consume Steak Fork
+instance Consume Petrol Car
+instance Consume Stream Fold
+
+foo :: Consume what how => [what] -> Maybe how -> Maybe (Output what how)
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{Quiz time}
+
+\begin{lstlisting}[language=Haskell]
+log :: String -> IO ()
+log msg = putStrLn $ "[LOG] " ++ msg
+
+main :: IO ()
+main = log "Hello World"
+\end{lstlisting}
+
+\pause
+
+\begin{lstlisting}[language=Haskell]
+Log.hs:5:8: error: [GHC-87543]
+    Ambiguous occurrence 'log'.
+    It could refer to
+       either 'Prelude.log',
+              imported from 'Prelude' at Log.hs:1:1
+              (and originally defined in 'GHC.Float'),
+           or 'Main.log', defined at Log.hs:2:1.
+  |
+5 | main = log "Hello World"
+  |        ^^^
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}{Until {\tt ImportShadowing} language extension arrives\ldots}
+
+\begin{itemize}[<+->]\itemsep3ex
+  \item Always use explicit export lists.
+  \item Prefer to use qualified imports and explicit import lists.
+  \item Avoid {\tt hiding} clause, even if it requires {\tt NoImplicitPrelude}.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]{{\tt ImportQualifiedPost} is available since GHC 8.10}
+
+\begin{lstlisting}[language=Haskell]
+import Data.Map (Map)
+import qualified Data.Map as M
+\end{lstlisting}
+
+\pause
+
+$$
+\mathlarger{\mathlarger{\mathlarger{\Rightarrow}}}
+$$
+
+\begin{lstlisting}[language=Haskell]
+{-# LANGUAGE ImportQualifiedPost #-}
+import Data.Map (Map)
+import Data.Map qualified as M
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{Quiz time}
+
+\begin{lstlisting}[language=Haskell]
+data Infinite a = a :< Infinite a
+
+foo :: Int
+foo =
+  let xs = 1 :< xs in
+    case xs of
+      x :< _ -> x
+\end{lstlisting}
+
+\bigskip
+\bigskip
+
+\begin{itemize}[<+->]
+  \item What's the result of {\tt foo}?
+  \item Your coworker moved it to another module and now it freezes. Why?
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Strictness}
+
+\begin{itemize}[<+->]\itemsep3ex
+  \item Good extensions should not change semantics silently.
+        Code should either compile and work in the same way,
+        or do not compile at all.
+  \item Thus {\tt Strict} and {\tt StrictData} are discouraged.
+  \item Using {\tt BangPatterns} or {\tt deepseq} is a sign that your
+        data structures lack bangs.
+  \item ``Make invalid laziness unrespresentable'':
+        sow the bangs of strictness generously and prematurely
+        across all datatypes.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Generic programming and boilerplate generation}
+
+\begin{itemize}[<+->]\itemsep3ex
+  \item {\tt TemplateHaskell} offers good compile time and runtime,
+        but it is a pub quiz, not a puzzle.
+  \item Scrap-your-boilerplate is extremely slow in runtime.
+  \item {\tt DeriveGeneric} is least bad, but you get
+        \begin{itemize}
+          \item either bad compile time,
+          \item or bad runtime.
+        \end{itemize}
+  \item Old but gold: it's often the best to use {\tt CPP} for boilerplate generation.
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]
+
+\bigskip
+
+\setbeamercolor{block body}{bg=ukraine-yellow}
+
+\begin{block}{}
+\bigskip
+\centerline{\Huge\bf \color{ukraine-blue} Thanks all!}
+\bigskip
+\end{block}
+
+\bigskip
+\bigskip
+
+\centerline{\Large\it
+  Haskell: where stability meets evolution.
+}
+\medskip
+\centerline{\Large\it
+  A language that grows with you.
+}
+\bigskip
+\bigskip
+
+\centerline{
+\faAt\ andrew.lelechenko@gmail.com
+}
+\medskip
+\centerline{
+\faGithub\ github.com/Bodigrim
+}
+\medskip
+\centerline{
+\faTelegram\ Bodigrim
+}
+
+\end{frame}
+
+\end{document}
