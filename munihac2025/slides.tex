@@ -1,0 +1,615 @@
+\documentclass[handout]{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage[T2A]{fontenc}
+\usepackage[english]{babel}
+\usepackage{graphicx}
+\usepackage{array}
+\usetheme{Warsaw}
+\usecolortheme{wolverine}
+
+\usepackage{fontawesome5}
+\usepackage{listings}
+\usepackage{changepage}
+\usepackage{soul}
+\usepackage{longtable}
+\usepackage[table]{xcolor}
+
+\usepackage{haskelllogo}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\definecolor{ukraine-blue}{rgb}{0,0.34,0.72}
+\definecolor{ukraine-yellow}{rgb}{1,0.84,0}
+
+\setbeamercolor{title}{fg=ukraine-blue,bg=ukraine-yellow}
+\setbeamercolor{frametitle}{fg=ukraine-blue,bg=ukraine-yellow}
+\setbeamercolor{section in head/foot}{fg=ukraine-blue}
+\setbeamercolor{title in head/foot}{fg=ukraine-blue,bg=ukraine-yellow}
+\setbeamercolor{author in head/foot}{fg=ukraine-yellow,bg=ukraine-blue}
+
+\definecolor{darkblue}{rgb}{0,0,0.8}
+\definecolor{darkgreen}{rgb}{0,0.6,0}
+\definecolor{darkred}{rgb}{1,0,0}
+
+\lstdefinelanguage{Haskell}%
+  {otherkeywords={},%
+   morekeywords={as,case,class,data,default,deriving,do,else,family,forall,foreign,hiding,if,import,in,infix,infixl,infixr,instance,let,mdo,module,newtype,of,proc,qualified,rec,then,type,where},%
+   sensitive,%
+   morecomment=[l]--,%
+   morecomment=[n]{\{-}{-\}},%
+   morestring=[b]"%
+  }[keywords,comments,strings]%
+
+\lstdefinelanguage{Cabal}%
+  {otherkeywords={name,library,hs-source-dirs,exposed-modules,test-suite,main-is,build-depends,other-modules},%
+   morekeywords={},%
+   sensitive,%
+   morecomment=[l]--,%
+   morecomment=[n]{\{-}{-\}},%
+   morestring=[b]"%
+  }[keywords,comments,strings]%
+
+\lstset{
+  language=Haskell,
+  showstringspaces=false,
+  columns=flexible,
+  keepspaces=true,
+  basicstyle={\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  escapeinside={<@}{@>},
+  literate={²}{{$^2\;\!$}}1 {±}{{$\pm$}}1 {μ}{{$\mu$}}1 {α}{{$\alpha$}}1 {++}{{+\hspace{-0.1em}+}}2 {->}{{$\to$}}2 {=>}{{$\Rightarrow$}}2 {<-}{{$\leftarrow$}}2 {≤}{{$\leqslant$}}1 {<=}{{$\leqslant$}}1 {≥}{{$\geqslant$}}1 {>=}{{$\geqslant$}}1 {∷}{{$::$}}1 {::}{{$::$}}1 {...}{{\dots}}1 {..}{{.\hspace{-0.25em}.}}1 {\%1->}{{$\multimap$}}1 {forall}{{$\forall$}}1 {|>}{{$\triangleright$}}1 {<|}{{$\triangleleft$}}1
+}
+
+\title{Linear Haskell for string builders}
+\author[Andrew Lelechenko]{Andrew Lelechenko \\ \texttt{andrew.lelechenko@gmail.com}}
+\date{MuniHac, 13.09.2025}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+
+\end{frame}
+
+\begin{frame}[fragile]{List concatenation is linear \dots}
+
+\begin{lstlisting}[language=Haskell]
+type String = [Char]
+
+concatRight :: String
+concatRight = long ++ veryLong ++ extraLong
+\end{lstlisting}
+
+\pause
+
+\begin{lstlisting}[language=Haskell]
+concatLeft :: String
+concatLeft = (long ++ veryLong) ++ extraLong
+\end{lstlisting}
+
+\pause
+
+\begin{lstlisting}[language=Haskell]
+infixr 5  ++
+(++) :: [a] -> [a] -> [a]
+(++) []       ys = ys
+(++) (x : xs) ys = x : (xs ++ ys)
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{List concatenation is linear only in its first argument}
+
+\begin{lstlisting}[language=Haskell]
+> length (replicate 100000000 'x' ++ ("foo" ++ "bar"))
+100000006
+(1.18 secs, 11,200,068,064 bytes)
+> length ((replicate 100000000 'x' ++ "foo") ++ "bar")
+100000006
+(1.84 secs, 16,800,068,064 bytes)
+\end{lstlisting}
+
+\pause
+
+\begin{lstlisting}[language=Haskell]
+> length (foldr (++) [] (map (:[]) ['\0'..'\10000']))
+10001
+(0.01 secs, 2,945,344 bytes)
+> length (foldl (++) [] (map (:[]) ['\0'..'\10000']))
+10001
+(0.84 secs, 4,299,915,184 bytes)
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{How to define instances of {\tt class Show}?}
+
+\begin{lstlisting}[language=Haskell]
+data User = User
+  { name    :: String
+  , address :: String
+  , phone   :: String }
+
+instance Show User where
+  show User{..} = name ++ address ++ phone
+\end{lstlisting}
+
+\pause
+
+\begin{lstlisting}[language=Haskell]
+data Order = Order
+  { user    :: User
+  , product :: String
+  , date    :: String }
+
+instance Show Order where
+  show Order{..} = show user ++ product ++ date
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{Define {\tt showsPrec}, not {\tt show}}
+
+\begin{lstlisting}[language=Haskell]
+class Show a where
+  show :: a -> String
+  showsPrec :: Int -> a -> (String -> String)
+  {-# MINIMAL show | showsPrec #-}
+
+instance Show User where
+  showsPrec _ User{..} rest =
+    name ++ address ++ phone ++ rest
+
+instance Show Order where
+  showsPrec p Order{..} rest =
+    showsPrec p user (product ++ date ++ rest)
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{Compose functions instead of concatenating data}
+
+\begin{lstlisting}[language=Haskell]
+instance Show User where
+  -- showsPrec _ User{..} rest =
+  --   name ++ address ++ phone ++ rest
+  showsPrec _ User{..} =
+    (name ++) . (address ++) . (phone ++)
+
+instance Show Order where
+  -- showsPrec p Order{..} rest =
+  --   showsPrec p user (product ++ date ++ rest)
+  showsPrec p Order{..} =
+    showsPrec p user . (product ++) . (date ++)
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{Which is faster?}
+
+\begin{lstlisting}[language=Haskell]
+(long ++) . ((veryLong ++) . (extraLong ++)) $ []
+\end{lstlisting}
+vs.
+\begin{lstlisting}[language=Haskell]
+((long ++) . (veryLong ++)) . (extraLong ++) $ []
+\end{lstlisting}
+
+
+\pause
+
+\bigskip
+\bigskip
+\bigskip
+
+There is no big difference!
+
+\begin{lstlisting}[language=Haskell]
+((long ++) . (veryLong ++)) . (extraLong ++) $ []
+  = ((long ++) . (veryLong ++)) $ (extraLong ++) $ []
+    = (long ++) $ (veryLong ++) $ (extraLong ++) $ []
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{List concatenation: recap}
+
+Efficient concatenation is possible, but requires diligence
+        to add new chunks from the left side only.
+
+\begin{lstlisting}[language=Haskell]
+
+newtype DList = DList (String -> String)
+
+fromString :: String -> DList
+fromString xs = DList (xs ++)
+
+toString :: DList -> String
+toString (DList f) = f []
+
+instance Semigroup DList where
+  DList f <> DList g = DList (f . g)
+\end{lstlisting}
+
+\bigskip
+
+{\tt DList} allows to concatenate left and right,
+        although has an increased constant factor.
+
+% For more discussion see Tom Ellis, {\it Demystifying DList}, 2014-01-24.
+\end{frame}
+
+\begin{frame}[fragile]
+
+\setbeamercolor{block body}{bg=ukraine-yellow}
+
+\begin{block}{}
+\bigskip
+\centerline{\Huge\bf \color{ukraine-blue} \st{\tt String} {\tt (Strict)Text}}
+\bigskip
+\end{block}
+
+\end{frame}
+
+
+\begin{frame}[fragile]{Concatenation of {\tt Text} is linear \dots}
+
+\begin{lstlisting}[language=Haskell,xleftmargin=-1.0ex]
+data Text = Text
+  { buffer :: ByteArray
+  , offset :: Int
+  , length :: Int }
+  -- len(buffer) could be /= offset + length
+
+concatRight :: Text
+concatRight = longText <> (veryLongText <> extraLongText)
+
+concatLeft :: Text
+concatLeft = (longText <> veryLongText) <> extraLongText
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Concatenation of {\tt Text} is linear in both arguments}
+\small
+\begin{lstlisting}[language=Haskell,xleftmargin=-3.0ex]
+> let x = T.replicate 100000000 "x" in T.length (x <> (x <> x))
+300000000
+(0.14 secs, 600,067,864 bytes)
+> let x = T.replicate 100000000 "x" in T.length ((x <> x) <> x)
+300000000
+(0.12 secs, 600,067,864 bytes)
+\end{lstlisting}
+
+\pause
+
+\begin{lstlisting}[language=Haskell,xleftmargin=-3.0ex]
+> T.length (foldr (<>) mempty (map T.singleton ['\0'..'\10000']))
+10001
+(0.16 secs, 151,491,368 bytes)
+> T.length (foldl (<>) mempty (map T.singleton ['\0'..'\10000']))
+10001
+(0.14 secs, 133,854,104 bytes)
+\end{lstlisting}
+
+\pause\bigskip
+
+\centerline{\bf
+Efficient concatenation requires us to guess the size of the final result
+}
+\end{frame}
+
+\begin{frame}[fragile]{{\tt Data.Text.Lazy.Builder} sidesteps the issue}
+
+\begin{lstlisting}[language=Haskell]
+newtype Builder = Builder {
+  forall s. (Buffer s -> ST s [Text])
+    -> (Buffer s -> ST s [Text]) }
+
+data Buffer s = Buffer
+  { buffer :: MutableByteArray s
+  , offset :: Int
+  , used   :: Int
+  , unused :: Int }
+  -- len(buffer) = offset + used + unused
+\end{lstlisting}
+
+\end{frame}
+
+
+\begin{frame}[fragile]{{\tt TextBuilder} by Nikita Volkov}
+
+\begin{lstlisting}[language=Haskell]
+data TextBuilder = TextBuilder
+  -- Estimated max size of the bytearray to allocate.
+  Int
+  -- Function that populates a preallocated bytearray
+  -- of the estimated max size specified above provided
+  -- an offset into it and producing the offset after.
+  (forall s. MutableByteArray s -> Int -> ST s Int)
+\end{lstlisting}
+
+\begin{lstlisting}[language=Haskell]
+instance Semigroup TextBuilder where
+  TextBuilder lenL writeL <> TextBuilder lenR writeR =
+    TextBuilder
+      (lenL + lenR)
+      (\array offset -> do
+        offsetAfter1 <- writeL array offset
+        writeR array offsetAfter1
+      )
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{Java-style string builder}
+
+\begin{lstlisting}[language=Haskell]
+data Buffer = Buffer
+  { buffer :: ByteArray, used :: Int }
+
+(++) :: Buffer -> Text -> Buffer
+Buffer arr used ++ Text srcArr srcOff srcLen = runST $ do
+  let unused = sizeofByteArray arr - used
+  if unused >= srcLen then do
+    mutArr <- unsafeThawByteArray arr
+    copyByteArray mutArr used srcArr srcOff srcLen
+    arr' <- unsafeFreezeByteArray mutArr
+    pure $ Buffer arr' (used + srcLen)
+  else do
+    mutArr <- newByteArray ((used + srcLen) * 2)
+    copyByteArray mutArr 0 arr 0 used
+    copyByteArray mutArr used srcArr srcOff srcLen
+    arr' <- unsafeFreezeByteArray mutArr
+    pure $ Buffer arr' (used + srcLen)
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{Honest mutable {\tt Buffer}}
+
+\begin{lstlisting}[language=Haskell]
+data MutBuffer s = MutBuffer
+  { buffer :: MutableByteArray s, used :: Int }
+
+(++) :: MutBuffer s -> Text -> ST s (MutBuffer s)
+MutBuffer mutArr used ++ Text srcArr srcOff srcLen = do
+  size <- getSizeofMutableByteArray mutArr
+  let unused = size - used
+  if unused >= srcLen then do
+    copyByteArray mutArr used srcArr srcOff srcLen
+    pure $ MutBuffer mutArr (used + srcLen)
+  else do
+    let newSize = (used + srcLen) * 2
+    mutArr' <- resizeMutableByteArray mutArr newSize
+    copyByteArray mutArr' used srcArr srcOff srcLen
+    pure $ MutBuffer mutArr' (used + srcLen)
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{{\tt attoparsec} used linear types before linear types}
+
+\vspace{-1.7ex}
+
+\begin{lstlisting}[language=Haskell]
+data Builder = Builder
+  { gen    :: Int
+  , buffer :: ByteArray -- ^ also stores 'gen' at start
+  , used   :: Int }
+\end{lstlisting}
+
+\vspace{-1.7ex}
+
+\pause
+
+\begin{block}{Commit 62856d6 by @bos on May 30, 2014}
+\small
+
+The fact of having a mutable buffer really helps with performance,
+but \dots\ {it does have a consequence: }if someone misuses [it] \dots\ they could overwrite data.
+
+% \dots having a mutable buffer really helps with performance,
+% but \dots\ if someone misuses [it] \dots\ they could overwrite data.
+
+% Since the API {\it looks} pure, it should {\it act} pure, too, so
+\dots
+we use
+two generation counters (one mutable, one immutable) to track the
+number of appends to a mutable buffer. If the counters ever get out
+of sync, someone is appending twice to a mutable buffer, so we
+duplicate the entire buffer in order to preserve the immutability
+of its older self.
+
+While we could go a step further and gain protection against API
+abuse on a multicore system, by use of an atomic increment
+instruction to bump the mutable generation counter, that would be
+very expensive\dots Clients should never call a continuation more than
+once; {\bf we~lack a linear type system} that could enforce this\dots
+\end{block}
+
+\end{frame}
+
+\begin{frame}[fragile]{Linear and unlifted types for the rescue}
+
+\begin{lstlisting}[language=Haskell]
+data Buffer :: TYPE ('BoxedRep 'Unlifted) where
+  Buffer :: {-# UNPACK #-} !Text -> Buffer
+  -- ^ constructor is not exported
+\end{lstlisting}
+\pause
+\begin{lstlisting}[language=Haskell]
+appendBounded
+  :: Int -- ^ Upper bound for the number of bytes to write
+  -> (forall s. MutableByteArray s -> Int -> ST s Int)
+  -- ^ Write bytes starting from the given offset
+  -- and return an actual number of bytes written.
+  -> Buffer %1-> Buffer
+
+(|>) :: Buffer %1-> Text -> Buffer
+\end{lstlisting}
+\pause
+\begin{lstlisting}[language=Haskell]
+runBuffer :: (Buffer %1-> Buffer) %1-> Text
+runBufferBS :: (Buffer %1-> Buffer) %1-> StrictByteString
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{Appending letters}
+
+\begin{lstlisting}[language=Haskell]
+(|>) :: Buffer %1-> Text -> Buffer
+(<|) :: Text -> Buffer %1-> Buffer
+(><) :: Buffer %1-> Buffer %1-> Buffer
+
+> runBuffer (\b -> b |> "foo" |> "bar")
+"foobar"
+\end{lstlisting}
+\pause
+\begin{lstlisting}[language=Haskell]
+(|>#) :: Buffer %1-> Addr# -> Buffer
+(#<|) :: Addr# -> Buffer %1-> Buffer
+
+> runBuffer (\b -> b |># "foo"# |># "bar"#)
+"foobar"
+\end{lstlisting}
+\pause
+\begin{lstlisting}[language=Haskell]
+(|>.) :: Buffer %1-> Char -> Buffer
+(.<|) :: Char -> Buffer %1-> Buffer
+> runBuffer (\b -> b |>. 'q' |>. 'w')
+"qw"
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{Appending numbers}
+
+\small
+\begin{lstlisting}[language=Haskell]
+(|>$) :: (Integral a, FiniteBits a) => Buffer %1-> a -> Buffer
+($<|) :: (Integral a, FiniteBits a) => a -> Buffer %1-> Buffer
+> runBuffer (\b -> b |>$ (42 :: Int))
+"42"
+\end{lstlisting}
+\pause
+\begin{lstlisting}[language=Haskell]
+(|>$$) :: Integral a => Buffer %1-> a -> Buffer
+($$<|) :: Integral a => a -> Buffer %1-> Buffer
+runBuffer (\b -> b |>$$ (1e50 :: Integer))
+"100000000000000000000000000000000000000000000000000"
+\end{lstlisting}
+\pause
+\begin{lstlisting}[language=Haskell]
+(|>&) :: (Integral a, FiniteBits a) => Buffer %1-> a -> Buffer
+(&<|) :: (Integral a, FiniteBits a) => a -> Buffer %1-> Buffer
+> runBuffer (\b -> b |>& (42 :: Int))
+"2a"
+\end{lstlisting}
+\pause
+\begin{lstlisting}[language=Haskell]
+(|>%) :: Buffer %1-> Double -> Buffer
+(%<|) :: Double -> Buffer %1-> Buffer
+> runBuffer (\b -> b |>% 123.456)
+"123.456"
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{No linear types? No problem}
+
+\begin{lstlisting}[language=Haskell]
+newtype Builder = Builder { unBuilder :: Buffer %1-> Buffer }
+
+fromText :: Text -> Builder
+fromChar :: Char -> Builder
+fromAddr :: Addr# -> Builder
+fromDec :: (Integral a, FiniteBits a) => a -> Builder
+fromUnboundedDec :: Integral a => a -> Builder
+fromHex :: (Integral a, FiniteBits a) => a -> Builder
+fromDouble :: Double -> Builder
+
+runBuilder :: Builder -> Text
+runBuilderBS :: Builder -> StrictByteString
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{Benchmarks with GHC 9.12 on aarch64}
+
+\begin{longtable}[]{@{}lrrrrr@{}}
+~ & \texttt{text} & \multicolumn{2}{c}{\texttt{text-builder}} & \multicolumn{2}{c}{This package}
+\\
+\endhead
+\endlastfoot
+\textbf{Text} & & & & & \\
+1000 & 80.5 $\mu$s & 26.7 $\mu$s & 0.33x & 23.1 $\mu$s & 0.29x \\
+1000000 & 216 ms & 107 ms & 0.49x & 22.9 ms & 0.11x \\
+\textbf{Char} & & & & & \\
+1000 & 35.4 $\mu$s & 18.4 $\mu$s & 0.52x & 7.68 $\mu$s & 0.22x \\
+1000000 & 175 ms & 178 ms & 1.02x & 10.5 ms & 0.06x \\
+\textbf{Decimal} & & & & & \\
+1000 & 148 $\mu$s & 738 $\mu$s & 5.00x & 106 $\mu$s & 0.72x \\
+1000000 & 334 ms & 2.803 s & 8.40x & 108 ms & 0.32x \\
+\textbf{Hexadecimal} & & & & & \\
+1000 & 862 $\mu$s & 141 $\mu$s & 0.16x & 44.6 $\mu$s & 0.05x \\
+1000000 & 1.502 s & 228 ms & 0.15x & 45.9 ms & 0.03x \\
+\textbf{Double} & & & & & \\
+1000 & 14.2 ms & 71.9 ms & 5.05x & 671 $\mu$s & 0.05x \\
+1000000 & 14.366 s & 101.342 s & 7.05x & 689 ms & 0.05x \\
+\end{longtable}
+
+\end{frame}
+
+
+\begin{frame}[fragile]
+
+\setbeamercolor{block body}{bg=ukraine-yellow}
+
+\begin{block}{}
+\bigskip
+\centerline{\Huge\bf \color{ukraine-blue} Thank you!}
+\bigskip
+\end{block}
+
+\bigskip
+\bigskip
+\bigskip
+
+\centerline{\color{ukraine-blue}
+\faTelegram\ Bodigrim
+}
+
+\medskip
+
+\centerline{\color{ukraine-blue}
+\faAt\ andrew.lelechenko@gmail.com
+}
+
+\medskip
+
+\centerline{\color{ukraine-blue}
+\faGithub\ github.com/Bodigrim/linear-builder
+}
+
+\medskip
+
+\centerline{\color{ukraine-blue}
+\haskelllogo[scale=0.12,
+first rangle color=ukraine-blue,
+lambda color=ukraine-blue,
+upper equals color=ukraine-blue,
+lower equals color=ukraine-blue
+]\
+hackage.haskell.org/package/text-builder-linear
+}
+
+\end{frame}
+
+\end{document}
