@@ -11,6 +11,7 @@
 \usepackage{listings}
 \usepackage{changepage}
 \usepackage{soul}
+\usepackage{longtable}
 \usepackage[table]{xcolor}
 
 \usepackage{haskelllogo}
@@ -62,17 +63,27 @@
   commentstyle=\color{dkgreen},
   stringstyle=\color{mauve},
   escapeinside={<@}{@>},
-  literate={²}{{$^2\;\!$}}1 {±}{{$\pm$}}1 {μ}{{$\mu$}}1 {α}{{$\alpha$}}1 {++}{{+\hspace{-0.1em}+}}2 {->}{{$\to$}}2 {=>}{{$\Rightarrow$}}2 {<-}{{$\leftarrow$}}2 {≤}{{$\leqslant$}}1 {<=}{{$\leqslant$}}1 {≥}{{$\geqslant$}}1 {>=}{{$\geqslant$}}1 {∷}{{$::$}}1 {::}{{$::$}}1 {...}{{\dots}}1 {..}{{.\hspace{-0.25em}.}}1
+  literate={²}{{$^2\;\!$}}1 {±}{{$\pm$}}1 {μ}{{$\mu$}}1 {α}{{$\alpha$}}1 {++}{{+\hspace{-0.1em}+}}2 {->}{{$\to$}}2 {=>}{{$\Rightarrow$}}2 {<-}{{$\leftarrow$}}2 {≤}{{$\leqslant$}}1 {<=}{{$\leqslant$}}1 {≥}{{$\geqslant$}}1 {>=}{{$\geqslant$}}1 {∷}{{$::$}}1 {::}{{$::$}}1 {...}{{\dots}}1 {..}{{.\hspace{-0.25em}.}}1 {\%1->}{{$\multimap$}}1 {forall}{{$\forall$}}1
 }
 
 \title{Linear Haskell for string builders}
 \author[Andrew Lelechenko]{Andrew Lelechenko \\ \texttt{andrew.lelechenko@gmail.com}}
-\date{MuniHac, 13.09.2025}
+\date{MuniHac, 13.09.2025 \par https://tinyurl.com/bdh8wyyp}
+
+\titlegraphic{\includegraphics[width=0.25\textwidth]{bdh8wyyp-400.png}}
 
 \begin{document}
 
 \begin{frame}
   \titlepage
+
+\end{frame}
+
+\begin{frame}{https://tinyurl.com/bdh8wyyp}
+
+\centerline{
+\includegraphics[width=0.7\textwidth]{bdh8wyyp-400.png}
+}
 
 \end{frame}
 
@@ -252,7 +263,7 @@ Builder allows to concatenate left and right,
 
 \begin{frame}[fragile]{Concatenation of {\tt StrictText} is linear \dots}
 \begin{lstlisting}[language=Haskell]
-data StrictText = StrictText
+data StrictText = Text
   { buffer :: ByteArray
   , offset :: Int
   , length :: Int }
@@ -268,7 +279,7 @@ concatLeft = (longText ++ veryLongText) ++ extraLongText
 
 \begin{frame}[fragile]{Concatenation of {\tt StrictText} is linear in both arguments}
 \begin{lstlisting}[language=Haskell]
-data StrictText = StrictText
+data StrictText = Text
   { buffer :: ByteArray
   , offset :: Int
   , length :: Int }
@@ -289,7 +300,7 @@ data LazyText = Empty | Chunk StrictText LazyText
 
 newtype Builder = Builder {
   forall s. (Buffer s -> ST s [StrictText])
-         -> (Buffer s -> ST s [StrictText]) }
+    -> (Buffer s -> ST s [StrictText]) }
 
 data Buffer s = Buffer
   { buffer :: MutableByteArray s
@@ -302,7 +313,7 @@ data Buffer s = Buffer
 \end{frame}
 
 
-\begin{frame}[fragile]{{\tt TextBuilder} precomputes the total length}
+\begin{frame}[fragile]{{\tt TextBuilder} by Nikita Volkov}
 
 \begin{lstlisting}[language=Haskell]
 data TextBuilder = TextBuilder
@@ -327,32 +338,55 @@ instance Semigroup TextBuilder where
 
 \end{frame}
 
-
-\begin{frame}[fragile]{What would Java do?}
+\begin{frame}[fragile]{Java-style string builder}
 
 \begin{lstlisting}[language=Haskell]
-data Builder = Builder
+data Buffer = Buffer
   { buffer :: ByteArray
   , used   :: Int }
 
-(++) :: Builder -> Text -> Builder
-Builder arr used ++ Text srcArr srcOff srcLen = runST $ do
+(++) :: Buffer -> StrictText -> Buffer
+Buffer arr used ++ Text srcArr srcOff srcLen = runST $ do
   let unused = sizeofByteArray arr - used
   if unused >= srcLen then do
     mutArr <- unsafeThawByteArray arr
+    copyByteArray mutArr used srcArr srcOff srcLen
     arr' <- unsafeFreezeByteArray mutArr
-    pure $ Builder arr' (used + srcLen)
+    pure $ Buffer arr' (used + srcLen)
   else do
     mutArr <- newByteArray ((used + srcLen) * 2)
     copyByteArray mutArr 0 arr 0 used
     copyByteArray mutArr used srcArr srcOff srcLen
     arr' <- unsafeFreezeByteArray mutArr
-    pure $ Builder arr' (used + srcLen)
+    pure $ Buffer arr' (used + srcLen)
 \end{lstlisting}
 
 \end{frame}
 
-\begin{frame}[fragile]{Trailblazing {\tt attoparsec}}
+\begin{frame}[fragile]{Honest mutable {\tt Buffer}}
+
+\begin{lstlisting}[language=Haskell]
+data MutBuffer s = MutBuffer
+  { buffer :: MutableByteArray s
+  , used   :: Int }
+
+(++) :: MutBuffer s -> StrictText -> ST s (MutBuffer s)
+MutBuffer mutArr used ++ Text srcArr srcOff srcLen = do
+  size <- getSizeofMutableByteArray mutArr
+  let unused = size - used
+  if unused >= srcLen then do
+    copyByteArray mutArr used srcArr srcOff srcLen
+    pure $ MutBuffer mutArr (used + srcLen)
+  else do
+    let newSize = (used + srcLen) * 2
+    mutArr' <- resizeMutableByteArray mutArr newSize
+    copyByteArray mutArr' used srcArr srcOff srcLen
+    pure $ MutBuffer mutArr' (used + srcLen)
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{{\tt attoparsec} used linear types before linear types}
 
 \vspace{-1.7ex}
 
@@ -392,8 +426,131 @@ once; {\bf we~lack a linear type system} that could enforce this\dots
 
 \end{frame}
 
-
 % Add examples with catastrophic quadratic behavior
+
+\begin{frame}[fragile]{Linear buffer API --- 1}
+
+\begin{lstlisting}[language=Haskell]
+data Buffer :: TYPE ('BoxedRep 'Unlifted) where
+  Buffer :: {-# UNPACK #-} !Text -> Buffer
+
+appendBounded
+  :: Int -- ^ Upper bound for the number of bytes to write
+  -> (forall s. MutableByteArray s -> Int -> ST s Int)
+  -- ^ Write bytes starting from the given offset
+  -- and return an actual number of bytes written.
+  -> Buffer %1-> Buffer
+
+appendExact
+  :: Int -- ^ Exact number of bytes to write
+  -> (forall s. A.MArray s -> Int -> ST s ())
+  -- ^ Write bytes starting from the given offset
+  -> Buffer %1-> Buffer
+
+(|>) :: Buffer %1-> StrictText -> Buffer
+
+runBuffer :: (Buffer %1-> Buffer) %1-> StrictText
+runBufferBS :: (Buffer %1-> Buffer) %1-> StrictByteString
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{Linear buffer API --- 2}
+
+\begin{lstlisting}[language=Haskell]
+(|>) :: Buffer %1-> StrictText -> Buffer
+(<|) :: StrictText -> Buffer %1-> Buffer
+(><) :: Buffer %1-> Buffer %1-> Buffer
+
+> runBuffer (\b -> b |> "foo" |> "bar")
+"foobar"
+
+(|>#) :: Buffer %1-> Addr# -> Buffer
+(#<|) :: Addr# -> Buffer %1-> Buffer
+
+> runBuffer (\b -> b |># "foo"# |># "bar"#)
+"foobar"
+
+(|>.) :: Buffer %1-> Char -> Buffer
+(.<|) :: Char -> Buffer %1-> Buffer
+> runBuffer (\b -> b |>. 'q' |>. 'w')
+"qw"
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{Linear buffer API --- 3}
+
+\small
+\begin{lstlisting}[language=Haskell]
+(|>$) :: (Integral a, FiniteBits a) => Buffer %1-> a -> Buffer
+($<|) :: (Integral a, FiniteBits a) => a -> Buffer %1-> Buffer
+> runBuffer (\b -> b |>$ (42 :: Int))
+"42"
+
+(|>$$) :: Integral a => Buffer %1-> a -> Buffer
+($$<|) :: Integral a => a -> Buffer %1-> Buffer
+runBuffer (\b -> b |>$$ (1e50 :: Integer))
+"100000000000000000000000000000000000000000000000000"
+
+(|>&) :: (Integral a, FiniteBits a) => Buffer %1-> a -> Buffer
+(&<|) :: (Integral a, FiniteBits a) => a -> Buffer %1-> Buffer
+> runBuffer (\b -> b |>& (42 :: Int))
+"2a"
+
+(|>%) :: Buffer %1-> Double -> Buffer
+(%<|) :: Double -> Buffer %1-> Buffer
+> runBuffer (\b -> b |>% 123.456)
+"123.456"
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{No linear types? No problem}
+
+\begin{lstlisting}[language=Haskell]
+newtype Builder = Builder { unBuilder :: Buffer %1-> Buffer }
+
+fromText :: Text -> Builder
+fromChar :: Char -> Builder
+fromAddr :: Addr# -> Builder
+fromDec :: (Integral a, FiniteBits a) => a -> Builder
+fromUnboundedDec :: Integral a => a -> Builder
+fromHex :: (Integral a, FiniteBits a) => a -> Builder
+fromDouble :: Double -> Builder
+
+runBuilder :: Builder -> StrictText
+runBuilderBS :: Builder -> StrictByteString
+\end{lstlisting}
+
+\end{frame}
+
+\begin{frame}[fragile]{Benchmarks with GHC 9.12 on aarch64}
+
+\begin{longtable}[]{@{}lrrrrr@{}}
+~ & \texttt{text} & \multicolumn{2}{c}{\texttt{text-builder}} & \multicolumn{2}{c}{This package}
+\\
+\endhead
+\endlastfoot
+\textbf{Text} & & & & & \\
+1000 & 80.5 $\mu$s & 26.7 $\mu$s & 0.33x & 23.1 $\mu$s & 0.29x \\
+1000000 & 216 ms & 107 ms & 0.49x & 22.9 ms & 0.11x \\
+\textbf{Char} & & & & & \\
+1000 & 35.4 $\mu$s & 18.4 $\mu$s & 0.52x & 7.68 $\mu$s & 0.22x \\
+1000000 & 175 ms & 178 ms & 1.02x & 10.5 ms & 0.06x \\
+\textbf{Decimal} & & & & & \\
+1000 & 148 $\mu$s & 738 $\mu$s & 5.00x & 106 $\mu$s & 0.72x \\
+1000000 & 334 ms & 2.803 s & 8.40x & 108 ms & 0.32x \\
+\textbf{Hexadecimal} & & & & & \\
+1000 & 862 $\mu$s & 141 $\mu$s & 0.16x & 44.6 $\mu$s & 0.05x \\
+1000000 & 1.502 s & 228 ms & 0.15x & 45.9 ms & 0.03x \\
+\textbf{Double} & & & & & \\
+1000 & 14.2 ms & 71.9 ms & 5.05x & 671 $\mu$s & 0.05x \\
+1000000 & 14.366 s & 101.342 s & 7.05x & 689 ms & 0.05x \\
+\end{longtable}
+
+\end{frame}
+
 
 \begin{frame}[fragile]
 
